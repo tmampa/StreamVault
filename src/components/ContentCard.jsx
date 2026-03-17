@@ -9,7 +9,7 @@ export default function ContentCard({ item }) {
   const poster = imgUrl(item.poster_path, 'w342');
 
   const ratingClass = rating >= 7 ? 'high' : rating >= 5 ? 'mid' : 'low';
-  const linkTo = `/${mediaType}/${item.id}`;
+  const linkTo = item.linkTo || `/${mediaType}/${item.id}`;
 
   return (
     <Link to={linkTo} className="content-card">

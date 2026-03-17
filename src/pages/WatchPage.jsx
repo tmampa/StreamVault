@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import VideoPlayer from '../components/VideoPlayer';
 import { getMovieDetails, getTvDetails, getTvSeasonDetails } from '../api/tmdb';
+import { useContinueWatching } from '../context/ContinueWatchingContext';
 
 export default function WatchPage() {
   const params = useParams();
@@ -9,6 +10,7 @@ export default function WatchPage() {
   const [details, setDetails] = useState(null);
   const [episodeInfo, setEpisodeInfo] = useState(null);
   const [totalEpisodes, setTotalEpisodes] = useState(0);
+  const { addToHistory } = useContinueWatching();
 
   const isMovie = !params.season;
   const tmdbId = params.id;
@@ -21,6 +23,14 @@ export default function WatchPage() {
         if (isMovie) {
           const data = await getMovieDetails(tmdbId);
           setDetails(data);
+          addToHistory({
+            id: parseInt(tmdbId),
+            media_type: 'movie',
+            title: data.title,
+            poster_path: data.poster_path,
+            vote_average: data.vote_average,
+            release_date: data.release_date,
+          });
         } else {
           const [showData, seasonData] = await Promise.all([
             getTvDetails(tmdbId),
@@ -30,6 +40,16 @@ export default function WatchPage() {
           setTotalEpisodes(seasonData.episodes?.length || 0);
           const ep = seasonData.episodes?.find((e) => e.episode_number === episode);
           setEpisodeInfo(ep || null);
+          addToHistory({
+            id: parseInt(tmdbId),
+            media_type: 'tv',
+            name: showData.name,
+            poster_path: showData.poster_path,
+            vote_average: showData.vote_average,
+            first_air_date: showData.first_air_date,
+            season,
+            episode,
+          });
         }
       } catch (err) {
         console.error('Failed to load watch data:', err);

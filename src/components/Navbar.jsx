@@ -1,13 +1,16 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useWatchlist } from '../context/WatchlistContext';
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const searchRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
+  const { watchlist } = useWatchlist();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 30);
@@ -15,11 +18,17 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Close mobile menu on navigation
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [location]);
+
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
       setSearchOpen(false);
+      setMenuOpen(false);
     }
   };
 
@@ -37,10 +46,10 @@ export default function Navbar() {
       <div className="navbar__inner">
         <Link to="/" className="navbar__logo">
           <span className="navbar__logo-icon">▶</span>
-          StreamVault
+          Mampa
         </Link>
 
-        <ul className="navbar__links">
+        <ul className={`navbar__links ${menuOpen ? 'open' : ''}`}>
           <li>
             <Link to="/" className={`navbar__link ${isActive('/') ? 'active' : ''}`}>
               Home
@@ -54,6 +63,11 @@ export default function Navbar() {
           <li>
             <Link to="/search?type=tv" className={`navbar__link ${location.pathname === '/search' && location.search.includes('type=tv') ? 'active' : ''}`}>
               TV Shows
+            </Link>
+          </li>
+          <li>
+            <Link to="/watchlist" className={`navbar__link ${isActive('/watchlist') ? 'active' : ''}`}>
+              Watchlist{watchlist.length > 0 ? ` (${watchlist.length})` : ''}
             </Link>
           </li>
         </ul>
@@ -75,7 +89,11 @@ export default function Navbar() {
           </form>
         </div>
 
-        <button className="navbar__mobile-btn" onClick={toggleSearch}>
+        <button
+          className={`navbar__mobile-btn ${menuOpen ? 'open' : ''}`}
+          onClick={() => setMenuOpen(!menuOpen)}
+          aria-label="Toggle menu"
+        >
           <span /><span /><span />
         </button>
       </div>

@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getTvDetails, getTvSeasonDetails, imgUrl, backdropUrl } from '../api/tmdb';
+import { useWatchlist } from '../context/WatchlistContext';
 import ContentRow from '../components/ContentRow';
+import TrailerModal from '../components/TrailerModal';
 
 export default function TvDetailPage() {
   const { id } = useParams();
@@ -11,6 +13,9 @@ export default function TvDetailPage() {
   const [episodes, setEpisodes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [episodesLoading, setEpisodesLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [showTrailer, setShowTrailer] = useState(false);
+  const { addToWatchlist, removeFromWatchlist, isInWatchlist } = useWatchlist();
 
   useEffect(() => {
     async function load() {
@@ -18,11 +23,11 @@ export default function TvDetailPage() {
       try {
         const data = await getTvDetails(id);
         setShow(data);
-        // Default to first valid season
         const firstSeason = data.seasons?.find((s) => s.season_number >= 1);
         if (firstSeason) setSelectedSeason(firstSeason.season_number);
       } catch (err) {
         console.error('Failed to load TV show:', err);
+        setError('Failed to load TV show details. Please try again.');
       } finally {
         setLoading(false);
       }
@@ -57,8 +62,24 @@ export default function TvDetailPage() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="loading-container" style={{ marginTop: 'var(--nav-height)' }}>
+        <div className="error-message">
+          <span className="error-message__icon">⚠</span>
+          <span>{error}</span>
+        </div>
+        <button className="btn btn--secondary" style={{ marginTop: 16 }} onClick={() => navigate(-1)}>
+          ← Go Back
+        </button>
+      </div>
+    );
+  }
+
   if (!show) return null;
 
+  const inWatchlist = isInWatchlist(show.id, 'tv');
+  const hasTrailer = show.videos?.results?.some((v) => v.site === 'YouTube');
   const ratingColor =
     show.vote_average >= 7
       ? 'var(--rating-high)'
@@ -118,9 +139,9 @@ export default function TvDetailPage() {
 
             <div className="detail__genres">
               {show.genres?.map((g) => (
-                <span key={g.id} className="detail__genre-tag">
+                <Link key={g.id} to={`/genre/${g.id}?type=tv`} className="detail__genre-tag">
                   {g.name}
-                </span>
+                </Link>
               ))}
             </div>
 
@@ -134,6 +155,30 @@ export default function TvDetailPage() {
                 }
               >
                 ▶ Watch S{selectedSeason}E1
+              </button>
+              {hasTrailer && (
+                <button className="btn btn--secondary" onClick={() => setShowTrailer(true)}>
+                  🎬 Trailer
+                </button>
+              )}
+              <button
+                className={`btn btn--secondary ${inWatchlist ? 'watchlist-active' : ''}`}
+                onClick={() => {
+                  if (inWatchlist) {
+                    removeFromWatchlist(show.id, 'tv');
+                  } else {
+                    addToWatchlist({
+                      id: show.id,
+                      media_type: 'tv',
+                      name: show.name,
+                      poster_path: show.poster_path,
+                      vote_average: show.vote_average,
+                      first_air_date: show.first_air_date,
+                    });
+                  }
+                }}
+              >
+                {inWatchlist ? '✓ In Watchlist' : '+ Watchlist'}
               </button>
               <button className="btn btn--secondary" onClick={() => navigate(-1)}>
                 ← Back
@@ -227,6 +272,10 @@ export default function TvDetailPage() {
           />
         )}
       </div>
+
+      {showTrailer && (
+        <TrailerModal videos={show.videos} onClose={() => setShowTrailer(false)} />
+      )}
     </div>
   );
 }

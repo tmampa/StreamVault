@@ -1,22 +1,29 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getMovieDetails, imgUrl, backdropUrl } from '../api/tmdb';
+import { useWatchlist } from '../context/WatchlistContext';
 import ContentRow from '../components/ContentRow';
+import TrailerModal from '../components/TrailerModal';
 
 export default function MovieDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [movie, setMovie] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showTrailer, setShowTrailer] = useState(false);
+  const { addToWatchlist, removeFromWatchlist, isInWatchlist } = useWatchlist();
 
   useEffect(() => {
     async function load() {
       setLoading(true);
+      setError(null);
       try {
         const data = await getMovieDetails(id);
         setMovie(data);
       } catch (err) {
         console.error('Failed to load movie:', err);
+        setError('Failed to load movie details. Please try again.');
       } finally {
         setLoading(false);
       }
@@ -34,13 +41,44 @@ export default function MovieDetailPage() {
     );
   }
 
+  if (error) {
+    return (
+      <div className="loading-container" style={{ marginTop: 'var(--nav-height)' }}>
+        <div className="error-message">
+          <span className="error-message__icon">⚠</span>
+          <span>{error}</span>
+        </div>
+        <button className="btn btn--secondary" style={{ marginTop: 16 }} onClick={() => navigate(-1)}>
+          ← Go Back
+        </button>
+      </div>
+    );
+  }
+
   if (!movie) return null;
 
+  const inWatchlist = isInWatchlist(movie.id, 'movie');
+  const hasTrailer = movie.videos?.results?.some((v) => v.site === 'YouTube');
   const ratingColor = movie.vote_average >= 7 ? 'var(--rating-high)' : movie.vote_average >= 5 ? 'var(--rating-mid)' : 'var(--rating-low)';
   const runtime = movie.runtime ? `${Math.floor(movie.runtime / 60)}h ${movie.runtime % 60}m` : '';
   const year = (movie.release_date || '').slice(0, 4);
   const cast = movie.credits?.cast?.slice(0, 15) || [];
   const similar = movie.similar?.results || [];
+
+  const toggleWatchlist = () => {
+    if (inWatchlist) {
+      removeFromWatchlist(movie.id, 'movie');
+    } else {
+      addToWatchlist({
+        id: movie.id,
+        media_type: 'movie',
+        title: movie.title,
+        poster_path: movie.poster_path,
+        vote_average: movie.vote_average,
+        release_date: movie.release_date,
+      });
+    }
+  };
 
   return (
     <div className="detail">
@@ -87,9 +125,9 @@ export default function MovieDetailPage() {
 
             <div className="detail__genres">
               {movie.genres?.map((g) => (
-                <span key={g.id} className="detail__genre-tag">
+                <Link key={g.id} to={`/genre/${g.id}?type=movie`} className="detail__genre-tag">
                   {g.name}
-                </span>
+                </Link>
               ))}
             </div>
 
@@ -101,6 +139,17 @@ export default function MovieDetailPage() {
                 onClick={() => navigate(`/watch/movie/${movie.id}`)}
               >
                 ▶ Watch Now
+              </button>
+              {hasTrailer && (
+                <button className="btn btn--secondary" onClick={() => setShowTrailer(true)}>
+                  🎬 Trailer
+                </button>
+              )}
+              <button
+                className={`btn btn--secondary ${inWatchlist ? 'watchlist-active' : ''}`}
+                onClick={toggleWatchlist}
+              >
+                {inWatchlist ? '✓ In Watchlist' : '+ Watchlist'}
               </button>
               <button className="btn btn--secondary" onClick={() => navigate(-1)}>
                 ← Back
@@ -137,6 +186,10 @@ export default function MovieDetailPage() {
           <ContentRow title="Similar Movies" items={similar.map(s => ({ ...s, media_type: 'movie' }))} />
         )}
       </div>
+
+      {showTrailer && (
+        <TrailerModal videos={movie.videos} onClose={() => setShowTrailer(false)} />
+      )}
     </div>
   );
 }

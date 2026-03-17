@@ -22,7 +22,6 @@ export default function HeroSection({ items }) {
   const mediaType = item.media_type || (item.title ? 'movie' : 'tv');
   const year = (item.release_date || item.first_air_date || '').slice(0, 4);
   const rating = item.vote_average ? item.vote_average.toFixed(1) : '';
-  const backdrop = backdropUrl(item.backdrop_path);
 
   const handleWatch = () => {
     if (mediaType === 'movie') {
@@ -38,10 +37,13 @@ export default function HeroSection({ items }) {
 
   return (
     <div className="hero">
-      <div
-        className="hero__backdrop"
-        style={{ backgroundImage: backdrop ? `url(${backdrop})` : 'none' }}
-      />
+      {featured.map((f, idx) => (
+        <div
+          key={f.id}
+          className={`hero__backdrop ${idx === current ? 'active' : ''}`}
+          style={{ backgroundImage: f.backdrop_path ? `url(${backdropUrl(f.backdrop_path)})` : 'none' }}
+        />
+      ))}
       <div className="hero__content">
         <span className="hero__badge">🔥 Trending Now</span>
         <h1 className="hero__title">{title}</h1>
