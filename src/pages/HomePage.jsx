@@ -59,7 +59,7 @@ export default function HomePage() {
   if (loading) {
     return (
       <div>
-        <div className="hero skeleton-hero" style={{ marginTop: 'var(--nav-height)' }}>
+        <div className="hero skeleton-hero">
           <div className="hero__backdrop skeleton-shimmer" style={{ opacity: 1 }} />
         </div>
         <SkeletonRow />
@@ -71,7 +71,7 @@ export default function HomePage() {
 
   if (error) {
     return (
-      <div style={{ marginTop: 'var(--nav-height)' }}>
+      <div style={{ paddingTop: 'var(--nav-height)' }}>
         <div className="error-banner">
           <span><AlertTriangle size={16} /> {error}</span>
           <button onClick={() => window.location.reload()}>Retry</button>
