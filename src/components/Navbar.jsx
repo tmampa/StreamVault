@@ -47,7 +47,7 @@ export default function Navbar() {
       <div className="navbar__inner">
         <Link to="/" className="navbar__logo">
           <span className="navbar__logo-icon"><Play size={18} fill="currentColor" /></span>
-          StreamVault
+          Stephinah
         </Link>
 
         <ul className={`navbar__links ${menuOpen ? 'open' : ''}`}>

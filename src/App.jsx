@@ -12,7 +12,7 @@ import NotFoundPage from './pages/NotFoundPage';
 function Footer() {
   return (
     <footer className="footer">
-      <div className="footer__brand">StreamVault</div>
+      <div className="footer__brand">Stephinah</div>
       <p className="footer__text">
         Powered by TMDB & VidKing · Built with ♥
       </p>
