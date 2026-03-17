@@ -1,9 +1,11 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import ContentCard from './ContentCard';
+import PreviewModal from './PreviewModal';
 
 export default function ContentRow({ title, items, seeAllLink }) {
   const rowRef = useRef(null);
+  const [modalItem, setModalItem] = useState(null);
 
   const scroll = (direction) => {
     if (rowRef.current) {
@@ -37,7 +39,7 @@ export default function ContentRow({ title, items, seeAllLink }) {
         </button>
         <div className="content-row" ref={rowRef}>
           {items.map((item) => (
-            <ContentCard key={item.id} item={item} />
+            <ContentCard key={item.id} item={item} onOpenModal={setModalItem} />
           ))}
         </div>
         <button
@@ -48,6 +50,7 @@ export default function ContentRow({ title, items, seeAllLink }) {
           <ChevronRight size={28} />
         </button>
       </div>
+      {modalItem && <PreviewModal item={modalItem} onClose={() => setModalItem(null)} />}
     </section>
   );
 }

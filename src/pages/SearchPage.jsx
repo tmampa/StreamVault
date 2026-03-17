@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { AlertTriangle } from 'lucide-react';
 import ContentCard from '../components/ContentCard';
+import PreviewModal from '../components/PreviewModal';
 import SkeletonCard from '../components/SkeletonCard';
 import { searchMulti, discoverMovies, discoverTv, getMovieGenres, getTvGenres } from '../api/tmdb';
 
@@ -18,6 +19,7 @@ export default function SearchPage() {
   const [error, setError] = useState(null);
   const [genres, setGenres] = useState([]);
   const [selectedGenre, setSelectedGenre] = useState('');
+  const [modalItem, setModalItem] = useState(null);
   const loaderRef = useRef(null);
 
   // Load genres for filter dropdown
@@ -166,6 +168,7 @@ export default function SearchPage() {
                   ...item,
                   media_type: item.media_type || (filter !== 'all' ? filter : undefined),
                 }}
+                onOpenModal={setModalItem}
               />
             ))}
           </div>
@@ -174,6 +177,7 @@ export default function SearchPage() {
               {loadingMore && <div className="spinner" />}
             </div>
           )}
+          {modalItem && <PreviewModal item={modalItem} onClose={() => setModalItem(null)} />}
         </>
       )}
     </div>
