@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { Play, Star, Clapperboard, Check, Plus, ArrowLeft, AlertTriangle } from 'lucide-react';
 import { getTvDetails, getTvSeasonDetails, imgUrl, backdropUrl } from '../api/tmdb';
 import { useWatchlist } from '../context/WatchlistContext';
 import ContentRow from '../components/ContentRow';
@@ -66,11 +67,11 @@ export default function TvDetailPage() {
     return (
       <div className="loading-container" style={{ marginTop: 'var(--nav-height)' }}>
         <div className="error-message">
-          <span className="error-message__icon">⚠</span>
+          <span className="error-message__icon"><AlertTriangle size={20} /></span>
           <span>{error}</span>
         </div>
         <button className="btn btn--secondary" style={{ marginTop: 16 }} onClick={() => navigate(-1)}>
-          ← Go Back
+          <ArrowLeft size={16} /> Go Back
         </button>
       </div>
     );
@@ -126,7 +127,7 @@ export default function TvDetailPage() {
                 className="detail__rating-badge"
                 style={{ color: ratingColor, border: `1px solid ${ratingColor}` }}
               >
-                ★ {show.vote_average?.toFixed(1)}
+                <Star size={14} fill="currentColor" /> {show.vote_average?.toFixed(1)}
               </span>
               {year && (
                 <span>
@@ -154,11 +155,11 @@ export default function TvDetailPage() {
                   navigate(`/watch/tv/${show.id}/${selectedSeason}/1`)
                 }
               >
-                ▶ Watch S{selectedSeason}E1
+                <Play size={16} fill="currentColor" /> Watch S{selectedSeason}E1
               </button>
               {hasTrailer && (
                 <button className="btn btn--secondary" onClick={() => setShowTrailer(true)}>
-                  🎬 Trailer
+                  <Clapperboard size={16} /> Trailer
                 </button>
               )}
               <button
@@ -178,10 +179,10 @@ export default function TvDetailPage() {
                   }
                 }}
               >
-                {inWatchlist ? '✓ In Watchlist' : '+ Watchlist'}
+                {inWatchlist ? <><Check size={16} /> In Watchlist</> : <><Plus size={16} /> Watchlist</>}
               </button>
               <button className="btn btn--secondary" onClick={() => navigate(-1)}>
-                ← Back
+                <ArrowLeft size={16} /> Back
               </button>
             </div>
           </div>

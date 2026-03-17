@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import ContentCard from './ContentCard';
 
 export default function ContentRow({ title, items, seeAllLink }) {
@@ -22,7 +23,7 @@ export default function ContentRow({ title, items, seeAllLink }) {
         <h2 className="content-section__title">{title}</h2>
         {seeAllLink && (
           <a href={seeAllLink} className="content-section__see-all">
-            See All →
+            See All <ArrowRight size={16} />
           </a>
         )}
       </div>
@@ -32,7 +33,7 @@ export default function ContentRow({ title, items, seeAllLink }) {
           onClick={() => scroll('left')}
           aria-label="Scroll left"
         >
-          ‹
+          <ChevronLeft size={28} />
         </button>
         <div className="content-row" ref={rowRef}>
           {items.map((item) => (
@@ -44,7 +45,7 @@ export default function ContentRow({ title, items, seeAllLink }) {
           onClick={() => scroll('right')}
           aria-label="Scroll right"
         >
-          ›
+          <ChevronRight size={28} />
         </button>
       </div>
     </section>

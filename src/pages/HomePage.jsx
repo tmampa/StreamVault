@@ -3,6 +3,7 @@ import HeroSection from '../components/HeroSection';
 import ContentRow from '../components/ContentRow';
 import SkeletonCard from '../components/SkeletonCard';
 import { useContinueWatching } from '../context/ContinueWatchingContext';
+import { AlertTriangle, Play, Flame, Clapperboard, Tv, Star, Trophy } from 'lucide-react';
 import { getTrending, getPopularMovies, getPopularTv, getTopRatedMovies, getTopRatedTv } from '../api/tmdb';
 
 function SkeletonRow() {
@@ -72,7 +73,7 @@ export default function HomePage() {
     return (
       <div style={{ marginTop: 'var(--nav-height)' }}>
         <div className="error-banner">
-          <span>⚠ {error}</span>
+          <span><AlertTriangle size={16} /> {error}</span>
           <button onClick={() => window.location.reload()}>Retry</button>
         </div>
       </div>
@@ -84,7 +85,7 @@ export default function HomePage() {
       <HeroSection items={trending} />
       {continueWatchingItems.length > 0 && (
         <ContentRow
-          title="▶ Continue Watching"
+          title={<><Play size={18} fill="currentColor" /> Continue Watching</>}
           items={continueWatchingItems.map((item) => ({
             ...item,
             linkTo:
@@ -94,11 +95,11 @@ export default function HomePage() {
           }))}
         />
       )}
-      <ContentRow title="🔥 Trending Today" items={trending} />
-      <ContentRow title="🎬 Popular Movies" items={popularMovies} />
-      <ContentRow title="📺 Popular TV Shows" items={popularTv} />
-      <ContentRow title="⭐ Top Rated Movies" items={topRatedMovies} />
-      <ContentRow title="🏆 Top Rated TV Shows" items={topRatedTv} />
+      <ContentRow title={<><Flame size={18} /> Trending Today</>} items={trending} />
+      <ContentRow title={<><Clapperboard size={18} /> Popular Movies</>} items={popularMovies} />
+      <ContentRow title={<><Tv size={18} /> Popular TV Shows</>} items={popularTv} />
+      <ContentRow title={<><Star size={18} /> Top Rated Movies</>} items={topRatedMovies} />
+      <ContentRow title={<><Trophy size={18} /> Top Rated TV Shows</>} items={topRatedTv} />
     </div>
   );
 }

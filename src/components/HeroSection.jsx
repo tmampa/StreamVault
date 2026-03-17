@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Flame, Star, Play, Info } from 'lucide-react';
 import { backdropUrl } from '../api/tmdb';
 
 export default function HeroSection({ items }) {
@@ -45,11 +46,11 @@ export default function HeroSection({ items }) {
         />
       ))}
       <div className="hero__content">
-        <span className="hero__badge">🔥 Trending Now</span>
+        <span className="hero__badge"><Flame size={16} /> Trending Now</span>
         <h1 className="hero__title">{title}</h1>
         <div className="hero__meta">
           {rating && (
-            <span className="hero__rating">★ {rating}</span>
+            <span className="hero__rating"><Star size={14} fill="currentColor" /> {rating}</span>
           )}
           {year && <span>{year}</span>}
           <span>{mediaType === 'movie' ? 'Movie' : 'TV Series'}</span>
@@ -57,10 +58,10 @@ export default function HeroSection({ items }) {
         <p className="hero__overview">{item.overview}</p>
         <div className="hero__actions">
           <button className="btn btn--primary" onClick={handleWatch}>
-            ▶ Watch Now
+            <Play size={16} fill="currentColor" /> Watch Now
           </button>
           <button className="btn btn--secondary" onClick={handleDetails}>
-            ℹ More Info
+            <Info size={16} /> More Info
           </button>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { AlertTriangle } from 'lucide-react';
 import ContentCard from '../components/ContentCard';
 import SkeletonCard from '../components/SkeletonCard';
 import { searchMulti, discoverMovies, discoverTv, getMovieGenres, getTvGenres } from '../api/tmdb';
@@ -140,7 +141,7 @@ export default function SearchPage() {
 
       {error && (
         <div className="error-message">
-          <span className="error-message__icon">⚠</span>
+          <span className="error-message__icon"><AlertTriangle size={20} /></span>
           <span>{error}</span>
         </div>
       )}

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
 import VideoPlayer from '../components/VideoPlayer';
 import { getMovieDetails, getTvDetails, getTvSeasonDetails } from '../api/tmdb';
 import { useContinueWatching } from '../context/ContinueWatchingContext';
@@ -87,7 +88,7 @@ export default function WatchPage() {
           className="watch__back-btn"
           onClick={() => navigate(isMovie ? `/movie/${tmdbId}` : `/tv/${tmdbId}`)}
         >
-          ← Back to details
+          <ArrowLeft size={16} /> Back to details
         </button>
 
         <h1 className="watch__title">{title}</h1>
@@ -114,14 +115,14 @@ export default function WatchPage() {
                 disabled={episode <= 1}
                 onClick={handlePrevEpisode}
               >
-                ← Previous Episode
+                <ChevronLeft size={16} /> Previous Episode
               </button>
               <button
                 className="btn btn--primary btn--sm"
                 disabled={episode >= totalEpisodes}
                 onClick={handleNextEpisode}
               >
-                Next Episode →
+                Next Episode <ChevronRight size={16} />
               </button>
             </div>
           </>

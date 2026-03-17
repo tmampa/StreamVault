@@ -14,7 +14,7 @@ function Footer() {
     <footer className="footer">
       <div className="footer__brand">Mampa</div>
       <p className="footer__text">
-        Powered by TMDB & VidKing · Built with ❤️
+        Powered by TMDB & VidKing · Built with ♥
       </p>
     </footer>
   );

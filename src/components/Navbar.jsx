@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Search, Play } from 'lucide-react';
 import { useWatchlist } from '../context/WatchlistContext';
 
 export default function Navbar() {
@@ -45,7 +46,7 @@ export default function Navbar() {
     <nav className={`navbar ${scrolled ? 'scrolled' : ''}`}>
       <div className="navbar__inner">
         <Link to="/" className="navbar__logo">
-          <span className="navbar__logo-icon">▶</span>
+          <span className="navbar__logo-icon"><Play size={18} fill="currentColor" /></span>
           Mampa
         </Link>
 
@@ -75,7 +76,7 @@ export default function Navbar() {
         <div className="navbar__search">
           <form onSubmit={handleSearch}>
             <button type="button" className="navbar__search-btn" onClick={toggleSearch}>
-              🔍
+              <Search size={18} />
             </button>
             <input
               ref={searchRef}

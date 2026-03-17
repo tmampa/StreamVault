@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { Play, Star } from 'lucide-react';
 import { imgUrl } from '../api/tmdb';
 
 export default function ContentCard({ item }) {
@@ -20,11 +21,11 @@ export default function ContentCard({ item }) {
           <div className="no-poster">No Image</div>
         )}
         <div className="content-card__overlay">
-          <div className="content-card__play-btn">▶</div>
+          <div className="content-card__play-btn"><Play size={24} fill="currentColor" /></div>
         </div>
         {rating && (
           <span className={`content-card__rating content-card__rating--${ratingClass}`}>
-            ★ {rating}
+            <Star size={12} fill="currentColor" /> {rating}
           </span>
         )}
       </div>

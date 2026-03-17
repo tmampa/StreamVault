@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { Play, Star, Clapperboard, Check, Plus, ArrowLeft, AlertTriangle } from 'lucide-react';
 import { getMovieDetails, imgUrl, backdropUrl } from '../api/tmdb';
 import { useWatchlist } from '../context/WatchlistContext';
 import ContentRow from '../components/ContentRow';
@@ -45,11 +46,11 @@ export default function MovieDetailPage() {
     return (
       <div className="loading-container" style={{ marginTop: 'var(--nav-height)' }}>
         <div className="error-message">
-          <span className="error-message__icon">⚠</span>
+          <span className="error-message__icon"><AlertTriangle size={20} /></span>
           <span>{error}</span>
         </div>
         <button className="btn btn--secondary" style={{ marginTop: 16 }} onClick={() => navigate(-1)}>
-          ← Go Back
+          <ArrowLeft size={16} /> Go Back
         </button>
       </div>
     );
@@ -114,7 +115,7 @@ export default function MovieDetailPage() {
                 className="detail__rating-badge"
                 style={{ color: ratingColor, border: `1px solid ${ratingColor}` }}
               >
-                ★ {movie.vote_average?.toFixed(1)}
+                <Star size={14} fill="currentColor" /> {movie.vote_average?.toFixed(1)}
               </span>
               {year && <span>{year}</span>}
               {runtime && <span>{runtime}</span>}
@@ -138,21 +139,21 @@ export default function MovieDetailPage() {
                 className="btn btn--primary"
                 onClick={() => navigate(`/watch/movie/${movie.id}`)}
               >
-                ▶ Watch Now
+                <Play size={16} fill="currentColor" /> Watch Now
               </button>
               {hasTrailer && (
                 <button className="btn btn--secondary" onClick={() => setShowTrailer(true)}>
-                  🎬 Trailer
+                  <Clapperboard size={16} /> Trailer
                 </button>
               )}
               <button
                 className={`btn btn--secondary ${inWatchlist ? 'watchlist-active' : ''}`}
                 onClick={toggleWatchlist}
               >
-                {inWatchlist ? '✓ In Watchlist' : '+ Watchlist'}
+                {inWatchlist ? <><Check size={16} /> In Watchlist</> : <><Plus size={16} /> Watchlist</>}
               </button>
               <button className="btn btn--secondary" onClick={() => navigate(-1)}>
-                ← Back
+                <ArrowLeft size={16} /> Back
               </button>
             </div>
           </div>
