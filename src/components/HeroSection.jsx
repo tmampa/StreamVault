@@ -1,0 +1,76 @@
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { backdropUrl } from '../api/tmdb';
+
+export default function HeroSection({ items }) {
+  const [current, setCurrent] = useState(0);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!items || items.length === 0) return;
+    const interval = setInterval(() => {
+      setCurrent((prev) => (prev + 1) % Math.min(items.length, 5));
+    }, 8000);
+    return () => clearInterval(interval);
+  }, [items]);
+
+  if (!items || items.length === 0) return null;
+
+  const featured = items.slice(0, 5);
+  const item = featured[current];
+  const title = item.title || item.name;
+  const mediaType = item.media_type || (item.title ? 'movie' : 'tv');
+  const year = (item.release_date || item.first_air_date || '').slice(0, 4);
+  const rating = item.vote_average ? item.vote_average.toFixed(1) : '';
+  const backdrop = backdropUrl(item.backdrop_path);
+
+  const handleWatch = () => {
+    if (mediaType === 'movie') {
+      navigate(`/watch/movie/${item.id}`);
+    } else {
+      navigate(`/tv/${item.id}`);
+    }
+  };
+
+  const handleDetails = () => {
+    navigate(`/${mediaType}/${item.id}`);
+  };
+
+  return (
+    <div className="hero">
+      <div
+        className="hero__backdrop"
+        style={{ backgroundImage: backdrop ? `url(${backdrop})` : 'none' }}
+      />
+      <div className="hero__content">
+        <span className="hero__badge">🔥 Trending Now</span>
+        <h1 className="hero__title">{title}</h1>
+        <div className="hero__meta">
+          {rating && (
+            <span className="hero__rating">★ {rating}</span>
+          )}
+          {year && <span>{year}</span>}
+          <span>{mediaType === 'movie' ? 'Movie' : 'TV Series'}</span>
+        </div>
+        <p className="hero__overview">{item.overview}</p>
+        <div className="hero__actions">
+          <button className="btn btn--primary" onClick={handleWatch}>
+            ▶ Watch Now
+          </button>
+          <button className="btn btn--secondary" onClick={handleDetails}>
+            ℹ More Info
+          </button>
+        </div>
+      </div>
+      <div className="hero__indicators">
+        {featured.map((_, idx) => (
+          <button
+            key={idx}
+            className={`hero__indicator ${idx === current ? 'active' : ''}`}
+            onClick={() => setCurrent(idx)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
