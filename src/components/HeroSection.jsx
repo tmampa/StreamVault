@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Flame, Star, Play, Info } from 'lucide-react';
 import { backdropUrl } from '../api/tmdb';
+import PreviewModal from './PreviewModal';
 
 export default function HeroSection({ items }) {
   const [current, setCurrent] = useState(0);
+  const [modalItem, setModalItem] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -33,7 +35,7 @@ export default function HeroSection({ items }) {
   };
 
   const handleDetails = () => {
-    navigate(`/${mediaType}/${item.id}`);
+    setModalItem(item);
   };
 
   return (
@@ -74,6 +76,7 @@ export default function HeroSection({ items }) {
           />
         ))}
       </div>
+      {modalItem && <PreviewModal item={modalItem} onClose={() => setModalItem(null)} />}
     </div>
   );
 }
