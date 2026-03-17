@@ -613,6 +613,33 @@ input {
   transform: scale(1);
 }
 
+.content-card__remove-btn {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--transition-fast), background var(--transition-fast);
+  z-index: 5;
+}
+
+.content-card:hover .content-card__remove-btn {
+  opacity: 1;
+}
+
+.content-card__remove-btn:hover {
+  background: var(--danger);
+}
+
 .content-card__rating {
   position: absolute;
   top: 6px;

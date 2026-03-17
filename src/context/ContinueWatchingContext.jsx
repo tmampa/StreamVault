@@ -35,7 +35,16 @@ export function ContinueWatchingProvider({ children }) {
     });
   }, []);
 
-  const value = useMemo(() => ({ items, addToHistory }), [items, addToHistory]);
+  const removeFromHistory = useCallback((entry) => {
+    setItems((prev) => {
+      const key = getKey(entry);
+      const updated = prev.filter((i) => getKey(i) !== key);
+      saveItems(updated);
+      return updated;
+    });
+  }, []);
+
+  const value = useMemo(() => ({ items, addToHistory, removeFromHistory }), [items, addToHistory, removeFromHistory]);
 
   return (
     <ContinueWatchingContext.Provider value={value}>

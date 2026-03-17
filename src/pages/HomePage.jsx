@@ -29,7 +29,7 @@ export default function HomePage() {
   const [topRatedTv, setTopRatedTv] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { items: continueWatchingItems } = useContinueWatching();
+  const { items: continueWatchingItems, removeFromHistory } = useContinueWatching();
 
   useEffect(() => {
     async function loadData() {
@@ -93,6 +93,7 @@ export default function HomePage() {
                 ? `/watch/movie/${item.id}`
                 : `/watch/tv/${item.id}/${item.season}/${item.episode}`,
           }))}
+          onRemove={removeFromHistory}
         />
       )}
       <ContentRow title={<><Flame size={18} /> Trending Today</>} items={trending} />

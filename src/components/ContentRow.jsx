@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import ContentCard from './ContentCard';
 import PreviewModal from './PreviewModal';
 
-export default function ContentRow({ title, items, seeAllLink }) {
+export default function ContentRow({ title, items, seeAllLink, onRemove }) {
   const rowRef = useRef(null);
   const [modalItem, setModalItem] = useState(null);
 
@@ -39,7 +39,7 @@ export default function ContentRow({ title, items, seeAllLink }) {
         </button>
         <div className="content-row" ref={rowRef}>
           {items.map((item) => (
-            <ContentCard key={item.id} item={item} onOpenModal={setModalItem} />
+            <ContentCard key={item.id} item={item} onOpenModal={setModalItem} onRemove={onRemove} />
           ))}
         </div>
         <button
