@@ -1656,6 +1656,10 @@ a.detail__genre-tag:hover {
 /* =================== RESPONSIVE =================== */
 
 @media (max-width: 768px) {
+  :root {
+    --nav-height: 56px;
+  }
+
   .navbar__links {
     display: none;
     position: fixed;
@@ -1704,27 +1708,115 @@ a.detail__genre-tag:hover {
     transform: rotate(-45deg) translate(5px, -5px);
   }
 
-  .navbar__search-input.expanded {
-    width: 180px;
+  .navbar__logo {
+    font-size: 1.3rem;
   }
 
+  .navbar__logo-icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .navbar__search-input.expanded {
+    width: 160px;
+    font-size: 0.85rem;
+  }
+
+  /* Hero */
   .hero {
-    height: 75vh;
+    height: 65vh;
+    min-height: 380px;
   }
 
   .hero__content {
-    bottom: 15%;
-    max-width: 90%;
+    bottom: 12%;
+    max-width: 85%;
+  }
+
+  .hero__title {
+    font-size: clamp(1.5rem, 5vw, 2.2rem);
+  }
+
+  .hero__overview {
+    font-size: 0.85rem;
+    -webkit-line-clamp: 2;
+  }
+
+  .hero__badge {
+    font-size: 0.6rem;
+    padding: 3px 8px;
+  }
+
+  .hero__meta {
+    font-size: 0.8rem;
+    gap: 10px;
+  }
+
+  .hero__actions {
+    gap: 8px;
+  }
+
+  .hero__actions .btn {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+  }
+
+  .hero__actions .btn--icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  /* Content rows */
+  .content-section__title {
+    font-size: 1rem;
+  }
+
+  .content-card {
+    width: 140px;
+  }
+
+  /* Disable hover expansion on touch */
+  .content-card--expanded {
+    transform: none;
+  }
+
+  .content-card__hover-info {
+    display: none;
+  }
+
+  .content-card__play-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .content-row__scroll-btn {
+    width: 36px;
+  }
+
+  /* Detail page */
+  .detail__backdrop-wrapper {
+    height: 45vh;
+    min-height: 280px;
+  }
+
+  .detail__content {
+    margin-top: -100px;
+    padding-bottom: 40px;
   }
 
   .detail__top {
     flex-direction: column;
     align-items: center;
     text-align: center;
+    gap: 20px;
   }
 
   .detail__poster-wrapper {
-    width: 180px;
+    width: 160px;
+  }
+
+  .detail__title {
+    font-size: 1.5rem;
   }
 
   .detail__genres {
@@ -1733,52 +1825,237 @@ a.detail__genre-tag:hover {
 
   .detail__overview {
     max-width: 100%;
+    font-size: 0.9rem;
+  }
+
+  .detail__meta {
+    justify-content: center;
+    font-size: 0.8rem;
   }
 
   .detail__actions {
     justify-content: center;
+    flex-wrap: wrap;
   }
 
-  .content-card {
-    width: 150px;
+  .detail__actions .btn {
+    padding: 8px 16px;
+    font-size: 0.85rem;
   }
 
-
-
-  .preview-modal__similar-grid {
-    grid-template-columns: repeat(2, 1fr);
+  /* Cast */
+  .cast-section__title {
+    font-size: 1.1rem;
   }
 
+  .cast-card {
+    width: 85px;
+  }
+
+  .cast-card__photo {
+    width: 65px;
+    height: 65px;
+  }
+
+  .cast-card__name {
+    font-size: 0.7rem;
+  }
+
+  /* Episodes */
   .episode-grid {
     grid-template-columns: 1fr;
   }
 
-  .search-grid {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  .episode-card {
     gap: 10px;
+    padding: 10px;
+  }
+
+  .episode-card__still {
+    width: 110px;
+    height: 65px;
+  }
+
+  .season-btn {
+    padding: 6px 14px;
+    font-size: 0.8rem;
+  }
+
+  /* Watch page */
+  .watch__title {
+    font-size: 1.2rem;
+  }
+
+  .watch__info {
+    padding: 16px var(--container-padding);
+  }
+
+  .watch__episode-nav {
+    flex-wrap: wrap;
+  }
+
+  .watch__episode-nav .btn {
+    flex: 1;
+    min-width: 0;
+    font-size: 0.8rem;
+    padding: 8px 12px;
+  }
+
+  /* Search page */
+  .search-page {
+    padding-top: calc(var(--nav-height) + 24px);
+  }
+
+  .search-page__title {
+    font-size: 1.3rem;
+  }
+
+  .search-page__filters {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .filter-btn {
+    padding: 6px 14px;
+    font-size: 0.8rem;
+  }
+
+  .search-grid {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 20px 12px;
+  }
+
+  /* Preview modal */
+  .preview-modal__backdrop {
+    padding: 20px 12px;
+    align-items: flex-start;
+  }
+
+  .preview-modal__title {
+    font-size: 1.4rem;
+  }
+
+  .preview-modal__body {
+    padding: 16px 16px 24px;
+  }
+
+  .preview-modal__meta-row {
+    gap: 10px;
+    font-size: 0.8rem;
+  }
+
+  .preview-modal__overview {
+    font-size: 0.85rem;
+  }
+
+  .preview-modal__similar-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .preview-modal__hero-content {
+    bottom: 16px;
+    left: 16px;
+    right: 16px;
+  }
+
+  .preview-modal__hero-actions .btn {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+  }
+
+  .preview-modal__hero-actions .btn--icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  /* Footer */
+  .footer {
+    padding: 30px var(--container-padding) 20px;
   }
 }
 
 @media (max-width: 480px) {
+  .hero {
+    height: 55vh;
+    min-height: 320px;
+  }
+
+  .hero__content {
+    bottom: 10%;
+    max-width: 92%;
+  }
+
   .hero__actions {
     flex-direction: column;
   }
 
+  .hero__actions .btn {
+    width: 100%;
+  }
+
+  .hero__overview {
+    display: none;
+  }
+
   .content-card {
+    width: 120px;
+  }
+
+  .content-card__title {
+    font-size: 0.72rem;
+  }
+
+  .content-card__year {
+    font-size: 0.65rem;
+  }
+
+  .detail__poster-wrapper {
     width: 130px;
   }
 
+  .detail__title {
+    font-size: 1.3rem;
+  }
 
+  .detail__actions .btn--icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .episode-card__still {
+    width: 90px;
+    height: 52px;
+  }
+
+  .search-grid {
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 16px 10px;
+  }
+
+  .preview-modal__backdrop {
+    padding: 10px 8px;
+  }
 
   .preview-modal__title {
-    font-size: 1.3rem;
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+  }
+
+  .preview-modal__body {
+    padding: 12px 12px 20px;
   }
 
   .preview-modal__similar-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .detail__poster-wrapper {
-    width: 150px;
+  .preview-modal__more-info {
+    font-size: 0.85rem;
+    padding: 12px;
+  }
+
+  .navbar__search-input.expanded {
+    width: 130px;
   }
 }
