@@ -9,14 +9,14 @@ export function useWatchlist() {
 export function WatchlistProvider({ children }) {
   const [watchlist, setWatchlist] = useState(() => {
     try {
-      return JSON.parse(localStorage.getItem('mampa_watchlist')) || [];
+      return JSON.parse(localStorage.getItem('streamvault_watchlist')) || [];
     } catch {
       return [];
     }
   });
 
   useEffect(() => {
-    localStorage.setItem('mampa_watchlist', JSON.stringify(watchlist));
+    localStorage.setItem('streamvault_watchlist', JSON.stringify(watchlist));
   }, [watchlist]);
 
   const addToWatchlist = (item) => {
