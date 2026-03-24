@@ -9,6 +9,10 @@ const cache = new Map();
 const CACHE_TTL = 5 * 60 * 1000;
 
 async function fetchTMDB(endpoint, params = {}) {
+  if (!API_KEY) {
+    throw new Error('TMDB API key is missing. Add VITE_TMDB_API_KEY to your .env file.');
+  }
+
   const url = new URL(`${BASE_URL}${endpoint}`);
   url.searchParams.set('api_key', API_KEY);
   Object.entries(params).forEach(([k, v]) => {
@@ -21,9 +25,19 @@ async function fetchTMDB(endpoint, params = {}) {
     return cached.data;
   }
 
-  const res = await fetch(url.toString());
-  if (!res.ok) throw new Error(`TMDB API error: ${res.status}`);
+  let res;
+  try {
+    res = await fetch(url.toString());
+  } catch {
+    throw new Error('Network error. Check your connection and try again.');
+  }
+
   const data = await res.json();
+  if (!res.ok) {
+    const msg = data.status_message || `TMDB request failed (${res.status}). Please try again.`;
+    throw new Error(msg);
+  }
+
   cache.set(cacheKey, { data, timestamp: Date.now() });
   return data;
 }

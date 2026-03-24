@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Play, Plus, Check, ThumbsUp, ChevronDown, Star, X } from 'lucide-react';
-import { imgUrl, backdropUrl } from '../api/tmdb';
+import { imgUrl } from '../api/tmdb';
 import { useWatchlist } from '../context/WatchlistContext';
 import { useGenres } from '../context/GenreContext';
 
@@ -18,7 +18,6 @@ export default function ContentCard({ item, onOpenModal, onRemove }) {
   const rating = item.vote_average ? item.vote_average.toFixed(1) : null;
   const matchPct = item.vote_average ? Math.round(item.vote_average * 10) : null;
   const poster = imgUrl(item.poster_path, 'w342');
-  const backdrop = backdropUrl(item.backdrop_path, 'w780') || poster;
   const linkTo = item.linkTo || `/${mediaType}/${item.id}`;
   const inWatchlist = isInWatchlist(item.id, mediaType);
 

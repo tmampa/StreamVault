@@ -1,22 +1,36 @@
+/* eslint-disable react-refresh/only-export-components -- context module exports hook + provider */
 import { createContext, useContext, useState, useEffect } from 'react';
 
 const WatchlistContext = createContext();
+
+const STORAGE_KEY = 'streamvault_watchlist';
+const LEGACY_KEY = 'stephinah_watchlist';
+
+function loadWatchlist() {
+  try {
+    const next = localStorage.getItem(STORAGE_KEY);
+    if (next) return JSON.parse(next) || [];
+    const legacy = localStorage.getItem(LEGACY_KEY);
+    if (legacy) {
+      localStorage.setItem(STORAGE_KEY, legacy);
+      localStorage.removeItem(LEGACY_KEY);
+      return JSON.parse(legacy) || [];
+    }
+    return [];
+  } catch {
+    return [];
+  }
+}
 
 export function useWatchlist() {
   return useContext(WatchlistContext);
 }
 
 export function WatchlistProvider({ children }) {
-  const [watchlist, setWatchlist] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem('stephinah_watchlist')) || [];
-    } catch {
-      return [];
-    }
-  });
+  const [watchlist, setWatchlist] = useState(loadWatchlist);
 
   useEffect(() => {
-    localStorage.setItem('stephinah_watchlist', JSON.stringify(watchlist));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(watchlist));
   }, [watchlist]);
 
   const addToWatchlist = (item) => {

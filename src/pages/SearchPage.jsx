@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useSearchParams } from 'react-router-dom';
 import { AlertTriangle } from 'lucide-react';
 import ContentCard from '../components/ContentCard';
@@ -74,7 +75,7 @@ export default function SearchPage() {
         setTotalPages(data.total_pages || 1);
       } catch (err) {
         console.error('Search error:', err);
-        setError('Failed to load results. Please try again.');
+        setError(err instanceof Error ? err.message : 'Failed to load results. Please try again.');
         if (page === 1) setResults([]);
       } finally {
         setLoading(false);
@@ -108,8 +109,16 @@ export default function SearchPage() {
     ? 'Popular TV Shows'
     : 'Discover';
 
+  const metaDesc = query
+    ? `Search results for "${query}" on StreamVault.`
+    : 'Browse and filter movies and TV shows on StreamVault.';
+
   return (
     <div className="search-page">
+      <Helmet>
+        <title>{pageTitle} — StreamVault</title>
+        <meta name="description" content={metaDesc} />
+      </Helmet>
       <div className="search-page__header">
         <h1 className="search-page__title">{pageTitle}</h1>
         <p className="search-page__count">{results.length} results</p>

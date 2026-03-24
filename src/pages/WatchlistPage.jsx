@@ -1,3 +1,4 @@
+import { Helmet } from 'react-helmet-async';
 import { useWatchlist } from '../context/WatchlistContext';
 import ContentCard from '../components/ContentCard';
 import PreviewModal from '../components/PreviewModal';
@@ -9,6 +10,10 @@ export default function WatchlistPage() {
 
   return (
     <div className="search-page">
+      <Helmet>
+        <title>My Watchlist — StreamVault</title>
+        <meta name="description" content="Your saved movies and TV shows on StreamVault." />
+      </Helmet>
       <div className="search-page__header">
         <h1 className="search-page__title">My Watchlist</h1>
         <p className="search-page__count">{watchlist.length} items</p>

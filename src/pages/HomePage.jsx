@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import HeroSection from '../components/HeroSection';
 import ContentRow from '../components/ContentRow';
 import SkeletonCard from '../components/SkeletonCard';
@@ -48,7 +49,7 @@ export default function HomePage() {
         setTopRatedTv(topTvRes.results || []);
       } catch (err) {
         console.error('Failed to load homepage data:', err);
-        setError('Failed to load content. Please try again later.');
+        setError(err instanceof Error ? err.message : 'Failed to load content. Please try again later.');
       } finally {
         setLoading(false);
       }
@@ -59,6 +60,10 @@ export default function HomePage() {
   if (loading) {
     return (
       <div>
+        <Helmet>
+          <title>StreamVault — Home</title>
+          <meta name="description" content="Discover trending movies and TV shows." />
+        </Helmet>
         <div className="hero skeleton-hero">
           <div className="hero__backdrop skeleton-shimmer" style={{ opacity: 1 }} />
         </div>
@@ -72,6 +77,9 @@ export default function HomePage() {
   if (error) {
     return (
       <div style={{ paddingTop: 'var(--nav-height)' }}>
+        <Helmet>
+          <title>StreamVault — Error</title>
+        </Helmet>
         <div className="error-banner">
           <span><AlertTriangle size={16} /> {error}</span>
           <button onClick={() => window.location.reload()}>Retry</button>
@@ -82,6 +90,10 @@ export default function HomePage() {
 
   return (
     <div>
+      <Helmet>
+        <title>StreamVault — Home</title>
+        <meta name="description" content="Trending movies and TV, popular picks, and your continue watching list." />
+      </Helmet>
       <HeroSection items={trending} />
       {continueWatchingItems.length > 0 && (
         <ContentRow

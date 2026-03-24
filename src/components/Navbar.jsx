@@ -19,8 +19,9 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close mobile menu on navigation
+  // Close mobile menu when the route changes (e.g. back/forward)
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- sync menu to URL; alternatives add more complexity
     setMenuOpen(false);
   }, [location]);
 
@@ -47,7 +48,7 @@ export default function Navbar() {
       <div className="navbar__inner">
         <Link to="/" className="navbar__logo">
           <span className="navbar__logo-icon"><Play size={18} fill="currentColor" /></span>
-          Stephinah
+          StreamVault
         </Link>
 
         <ul className={`navbar__links ${menuOpen ? 'open' : ''}`}>

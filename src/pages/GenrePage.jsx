@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { AlertTriangle } from 'lucide-react';
 import ContentCard from '../components/ContentCard';
@@ -45,7 +46,7 @@ export default function GenrePage() {
         setTotalPages(data.total_pages || 1);
       } catch (err) {
         console.error('Failed to load genre results:', err);
-        setError('Failed to load results. Please try again.');
+        setError(err instanceof Error ? err.message : 'Failed to load results. Please try again.');
       } finally {
         setLoading(false);
       }
@@ -57,8 +58,14 @@ export default function GenrePage() {
     setSearchParams({ type: newType });
   };
 
+  const heading = `${genreName || 'Genre'} ${type === 'tv' ? 'TV Shows' : 'Movies'}`;
+
   return (
     <div className="search-page">
+      <Helmet>
+        <title>{heading} — StreamVault</title>
+        <meta name="description" content={`Browse ${heading.toLowerCase()} on StreamVault.`} />
+      </Helmet>
       <div className="search-page__header">
         <h1 className="search-page__title">
           {genreName || 'Genre'} {type === 'tv' ? 'TV Shows' : 'Movies'}
