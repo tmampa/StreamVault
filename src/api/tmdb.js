@@ -32,7 +32,12 @@ async function fetchTMDB(endpoint, params = {}) {
     throw new Error('Network error. Check your connection and try again.');
   }
 
-  const data = await res.json();
+  let data;
+  try {
+    data = await res.json();
+  } catch {
+    throw new Error(`TMDB request failed (${res.status}). Please try again.`);
+  }
   if (!res.ok) {
     const msg = data.status_message || `TMDB request failed (${res.status}). Please try again.`;
     throw new Error(msg);
