@@ -7,8 +7,7 @@ import PreviewModal from './PreviewModal';
 export default function HeroSection({ items }) {
   const [current, setCurrent] = useState(0);
   const [modalItem, setModalItem] = useState(null);
-  const [trailerKey, setTrailerKey] = useState(null);
-  const [videoReady, setVideoReady] = useState(false);
+  const [trailerState, setTrailerState] = useState({ key: null, ready: false, forIndex: -1 });
   const iframeRef = useRef(null);
   const navigate = useNavigate();
 
@@ -26,8 +25,6 @@ export default function HeroSection({ items }) {
     const cur = featured[current];
     if (!cur) return;
     let cancelled = false;
-    setTrailerKey(null);
-    setVideoReady(false);
     const type = cur.media_type || (cur.title ? 'movie' : 'tv');
     const fetchDetails = type === 'movie' ? getMovieDetails : getTvDetails;
     fetchDetails(cur.id)
@@ -36,9 +33,11 @@ export default function HeroSection({ items }) {
         const trailer =
           data.videos?.results?.find((v) => v.type === 'Trailer' && v.site === 'YouTube') ||
           data.videos?.results?.find((v) => v.site === 'YouTube');
-        if (trailer) setTrailerKey(trailer.key);
+        setTrailerState({ key: trailer ? trailer.key : null, ready: false, forIndex: current });
       })
-      .catch(() => {});
+      .catch(() => {
+        if (!cancelled) setTrailerState({ key: null, ready: false, forIndex: current });
+      });
     return () => { cancelled = true; };
   }, [items, current]);
 
@@ -50,6 +49,8 @@ export default function HeroSection({ items }) {
   const mediaType = item.media_type || (item.title ? 'movie' : 'tv');
   const year = (item.release_date || item.first_air_date || '').slice(0, 4);
   const rating = item.vote_average ? item.vote_average.toFixed(1) : '';
+  const trailerKey = trailerState.forIndex === current ? trailerState.key : null;
+  const videoReady = trailerState.forIndex === current && trailerState.ready;
 
   const handleWatch = () => {
     if (mediaType === 'movie') {
@@ -80,7 +81,7 @@ export default function HeroSection({ items }) {
             allow="autoplay; fullscreen; encrypted-media"
             allowFullScreen
             title="Trailer"
-            onLoad={() => setTimeout(() => setVideoReady(true), 1000)}
+            onLoad={() => setTimeout(() => setTrailerState((s) => ({ ...s, ready: true })), 1000)}
           />
         </div>
       )}
