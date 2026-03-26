@@ -74,7 +74,7 @@ body {
   color: var(--text-primary);
   line-height: 1.6;
   overflow-x: hidden;
-  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .skip-link {
@@ -307,7 +307,7 @@ input {
 .hero {
   position: relative;
   width: 100%;
-  height: 90vh;
+  height: 90dvh;
   min-height: 500px;
   max-height: 900px;
   overflow: hidden;
@@ -1104,13 +1104,13 @@ input {
 /* =================== DETAIL PAGE =================== */
 
 .detail {
-  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .detail__backdrop-wrapper {
   position: relative;
   width: 100%;
-  height: 65vh;
+  height: 65dvh;
   min-height: 400px;
 }
 
@@ -1376,7 +1376,7 @@ input {
 
 .watch {
   padding-top: var(--nav-height);
-  min-height: 100vh;
+  min-height: 100dvh;
   background: #000;
 }
 
@@ -1817,7 +1817,7 @@ a.detail__genre-tag:hover {
 
   /* Hero */
   .hero {
-    height: 65vh;
+    height: 65dvh;
     min-height: 380px;
   }
 
@@ -1888,7 +1888,7 @@ a.detail__genre-tag:hover {
 
   /* Detail page */
   .detail__backdrop-wrapper {
-    height: 45vh;
+    height: 45dvh;
     min-height: 280px;
   }
 
@@ -2068,9 +2068,73 @@ a.detail__genre-tag:hover {
   }
 }
 
+/* Landscape orientation on mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+  .hero {
+    height: 100dvh;
+    min-height: 0;
+  }
+
+  .hero__content {
+    bottom: 8%;
+    max-width: 50%;
+  }
+
+  .hero__title {
+    font-size: clamp(1.2rem, 4vw, 1.8rem);
+    margin-bottom: 8px;
+  }
+
+  .hero__overview {
+    display: none;
+  }
+
+  .hero__badge {
+    margin-bottom: 8px;
+  }
+
+  .hero__meta {
+    margin-bottom: 8px;
+    font-size: 0.75rem;
+  }
+
+  .hero__actions {
+    flex-direction: row;
+    gap: 6px;
+  }
+
+  .hero__actions .btn {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+  }
+
+  .hero__indicators {
+    bottom: 10px;
+  }
+
+  .detail__backdrop-wrapper {
+    height: 100dvh;
+    min-height: 0;
+  }
+
+  .detail__content {
+    margin-top: -60px;
+  }
+
+  .watch__player-container {
+    max-width: 100%;
+    height: calc(100dvh - var(--nav-height));
+    aspect-ratio: auto;
+  }
+
+  .navbar {
+    padding: 0 12px;
+  }
+}
+
 @media (max-width: 480px) {
   .hero {
-    height: 55vh;
+    height: 55dvh;
     min-height: 320px;
   }
 
