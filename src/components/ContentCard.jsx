@@ -1,11 +1,11 @@
 import { useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Play, Plus, Check, ThumbsUp, ChevronDown, Star } from 'lucide-react';
-import { imgUrl, backdropUrl } from '../api/tmdb';
+import { Play, Plus, Check, ThumbsUp, ChevronDown, Star, X } from 'lucide-react';
+import { imgUrl } from '../api/tmdb';
 import { useWatchlist } from '../context/WatchlistContext';
 import { useGenres } from '../context/GenreContext';
 
-export default function ContentCard({ item, onOpenModal }) {
+export default function ContentCard({ item, onOpenModal, onRemove }) {
   const navigate = useNavigate();
   const genreMap = useGenres();
   const { addToWatchlist, removeFromWatchlist, isInWatchlist } = useWatchlist();
@@ -18,7 +18,6 @@ export default function ContentCard({ item, onOpenModal }) {
   const rating = item.vote_average ? item.vote_average.toFixed(1) : null;
   const matchPct = item.vote_average ? Math.round(item.vote_average * 10) : null;
   const poster = imgUrl(item.poster_path, 'w342');
-  const backdrop = backdropUrl(item.backdrop_path, 'w780') || poster;
   const linkTo = item.linkTo || `/${mediaType}/${item.id}`;
   const inWatchlist = isInWatchlist(item.id, mediaType);
 
@@ -83,6 +82,15 @@ export default function ContentCard({ item, onOpenModal }) {
           <span className={`content-card__rating content-card__rating--${rating >= 7 ? 'high' : rating >= 5 ? 'mid' : 'low'}`}>
             <Star size={12} fill="currentColor" /> {rating}
           </span>
+        )}
+        {onRemove && (
+          <button
+            className="content-card__remove-btn"
+            onClick={(e) => { e.stopPropagation(); onRemove(item); }}
+            title="Remove"
+          >
+            <X size={14} />
+          </button>
         )}
       </div>
 

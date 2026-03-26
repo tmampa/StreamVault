@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react';
 import VideoPlayer from '../components/VideoPlayer';
 import { getMovieDetails, getTvDetails, getTvSeasonDetails } from '../api/tmdb';
 import { useContinueWatching } from '../context/ContinueWatchingContext';
@@ -11,21 +12,32 @@ export default function WatchPage() {
   const [details, setDetails] = useState(null);
   const [episodeInfo, setEpisodeInfo] = useState(null);
   const [totalEpisodes, setTotalEpisodes] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [retryKey, setRetryKey] = useState(0);
   const { addToHistory } = useContinueWatching();
 
   const isMovie = !params.season;
   const tmdbId = params.id;
-  const season = parseInt(params.season) || 1;
-  const episode = parseInt(params.episode) || 1;
+  const season = parseInt(params.season, 10) || 1;
+  const episode = parseInt(params.episode, 10) || 1;
 
   useEffect(() => {
+    let cancelled = false;
+
     async function load() {
+      setLoading(true);
+      setError(null);
+      setDetails(null);
+      setEpisodeInfo(null);
+      setTotalEpisodes(0);
       try {
         if (isMovie) {
           const data = await getMovieDetails(tmdbId);
+          if (cancelled) return;
           setDetails(data);
           addToHistory({
-            id: parseInt(tmdbId),
+            id: parseInt(tmdbId, 10),
             media_type: 'movie',
             title: data.title,
             poster_path: data.poster_path,
@@ -37,12 +49,13 @@ export default function WatchPage() {
             getTvDetails(tmdbId),
             getTvSeasonDetails(tmdbId, season),
           ]);
+          if (cancelled) return;
           setDetails(showData);
           setTotalEpisodes(seasonData.episodes?.length || 0);
           const ep = seasonData.episodes?.find((e) => e.episode_number === episode);
           setEpisodeInfo(ep || null);
           addToHistory({
-            id: parseInt(tmdbId),
+            id: parseInt(tmdbId, 10),
             media_type: 'tv',
             name: showData.name,
             poster_path: showData.poster_path,
@@ -54,11 +67,20 @@ export default function WatchPage() {
         }
       } catch (err) {
         console.error('Failed to load watch data:', err);
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : 'Failed to load details. Please try again.');
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     }
+
     load();
     window.scrollTo(0, 0);
-  }, [tmdbId, season, episode, isMovie]);
+    return () => {
+      cancelled = true;
+    };
+  }, [tmdbId, season, episode, isMovie, addToHistory, retryKey]);
 
   const title = details?.title || details?.name || 'Loading...';
 
@@ -74,8 +96,55 @@ export default function WatchPage() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="loading-container" style={{ marginTop: 'var(--nav-height)' }}>
+        <Helmet>
+          <title>Watch — StreamVault</title>
+        </Helmet>
+        <div className="spinner" />
+        <span className="loading-text">Loading...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="loading-container" style={{ marginTop: 'var(--nav-height)' }}>
+        <Helmet>
+          <title>Error — StreamVault</title>
+        </Helmet>
+        <div className="error-message">
+          <span className="error-message__icon">
+            <AlertTriangle size={20} />
+          </span>
+          <span>{error}</span>
+        </div>
+        <button type="button" className="btn btn--primary" style={{ marginTop: 16 }} onClick={() => setRetryKey((k) => k + 1)}>
+          Try again
+        </button>
+        <button type="button" className="btn btn--secondary" style={{ marginTop: 12 }} onClick={() => navigate(-1)}>
+          <ArrowLeft size={16} /> Go back
+        </button>
+      </div>
+    );
+  }
+
+  if (!details) return null;
+
   return (
     <div className="watch">
+      <Helmet>
+        <title>{`${title} — Watch — StreamVault`}</title>
+        <meta
+          name="description"
+          content={
+            isMovie
+              ? `Watch ${details.title || 'this title'} on StreamVault.`
+              : `Watch ${details.name || 'this show'} S${season}E${episode} on StreamVault.`
+          }
+        />
+      </Helmet>
       <VideoPlayer
         tmdbId={tmdbId}
         mediaType={isMovie ? 'movie' : 'tv'}
@@ -85,6 +154,7 @@ export default function WatchPage() {
 
       <div className="watch__info">
         <button
+          type="button"
           className="watch__back-btn"
           onClick={() => navigate(isMovie ? `/movie/${tmdbId}` : `/tv/${tmdbId}`)}
         >
@@ -111,6 +181,7 @@ export default function WatchPage() {
             )}
             <div className="watch__episode-nav">
               <button
+                type="button"
                 className="btn btn--secondary btn--sm"
                 disabled={episode <= 1}
                 onClick={handlePrevEpisode}
@@ -118,6 +189,7 @@ export default function WatchPage() {
                 <ChevronLeft size={16} /> Previous Episode
               </button>
               <button
+                type="button"
                 className="btn btn--primary btn--sm"
                 disabled={episode >= totalEpisodes}
                 onClick={handleNextEpisode}

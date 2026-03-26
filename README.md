@@ -1,16 +1,51 @@
-# React + Vite
+# StreamVault
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Browse movies and TV shows with data from [The Movie Database (TMDB)](https://www.themoviedb.org/). StreamVault includes search, genres, a watchlist, continue watching (stored locally in your browser), trailers, and embedded playback via VidKing.
 
-Currently, two official plugins are available:
+## Prerequisites
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- [Node.js](https://nodejs.org/) 18+ (LTS recommended)
+- npm (bundled with Node)
 
-## React Compiler
+## Setup
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+1. Clone the repository and install dependencies:
 
-## Expanding the ESLint configuration
+   ```bash
+   npm install
+   ```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+2. Copy [`.env.example`](.env.example) to `.env` in the project root and add your TMDB API key:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+   Set `VITE_TMDB_API_KEY` to your key from [TMDB API settings](https://www.themoviedb.org/settings/api).
+
+   **Note:** With Vite, variables prefixed with `VITE_` are exposed to the client bundle. TMDB’s free key is intended for client-side use in many demos, but treat any API key as non-secret only if you accept that tradeoff. See comments in [`src/api/tmdb.js`](src/api/tmdb.js).
+
+## Scripts
+
+| Command        | Description                    |
+|----------------|--------------------------------|
+| `npm run dev`  | Start dev server (Vite + HMR)  |
+| `npm run build`| Production build to `dist/`    |
+| `npm run preview` | Serve production build locally |
+| `npm run lint` | Run ESLint                     |
+| `npm test`     | Run Vitest (watch mode)        |
+| `npm run test:run` | Run Vitest once (CI / scripts) |
+
+## Tech stack
+
+- React 19, React Router 7, Vite 8
+- Styling: CSS ([`src/index.css`](src/index.css))
+- Icons: [Lucide React](https://lucide.dev/)
+
+## Deploying
+
+Run `npm run build` and host the `dist/` folder on any static host (Netlify, Vercel, GitHub Pages, etc.). Configure the host to serve `index.html` for client-side routes (SPA fallback).
+
+## License
+
+Private project (`private` in `package.json`). Third-party content and APIs are subject to their respective terms.

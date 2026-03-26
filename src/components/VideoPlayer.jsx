@@ -22,7 +22,11 @@ const VideoPlayer = memo(function VideoPlayer({ tmdbId, mediaType, season, episo
         allowFullScreen
         allow="autoplay; fullscreen; encrypted-media; picture-in-picture"
         referrerPolicy="origin"
-        title="Video Player"
+        title={
+          mediaType === 'movie'
+            ? 'Movie playback (embedded player)'
+            : `TV playback — season ${season}, episode ${episode}`
+        }
       />
     </div>
   );

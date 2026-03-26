@@ -1,12 +1,22 @@
+/* eslint-disable react-refresh/only-export-components -- context module exports hook + provider */
 import { createContext, useContext, useState, useCallback, useMemo } from 'react';
 
 const ContinueWatchingContext = createContext();
-const STORAGE_KEY = 'stephinah_continue';
+const STORAGE_KEY = 'streamvault_continue';
+const LEGACY_KEY = 'stephinah_continue';
 const MAX_ITEMS = 20;
 
 function loadItems() {
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    const next = localStorage.getItem(STORAGE_KEY);
+    if (next) return JSON.parse(next) || [];
+    const legacy = localStorage.getItem(LEGACY_KEY);
+    if (legacy) {
+      localStorage.setItem(STORAGE_KEY, legacy);
+      localStorage.removeItem(LEGACY_KEY);
+      return JSON.parse(legacy) || [];
+    }
+    return [];
   } catch {
     return [];
   }
@@ -35,7 +45,16 @@ export function ContinueWatchingProvider({ children }) {
     });
   }, []);
 
-  const value = useMemo(() => ({ items, addToHistory }), [items, addToHistory]);
+  const removeFromHistory = useCallback((entry) => {
+    setItems((prev) => {
+      const key = getKey(entry);
+      const updated = prev.filter((i) => getKey(i) !== key);
+      saveItems(updated);
+      return updated;
+    });
+  }, []);
+
+  const value = useMemo(() => ({ items, addToHistory, removeFromHistory }), [items, addToHistory, removeFromHistory]);
 
   return (
     <ContinueWatchingContext.Provider value={value}>

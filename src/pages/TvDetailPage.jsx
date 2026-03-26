@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Play, Star, Clapperboard, Check, Plus, ArrowLeft, AlertTriangle } from 'lucide-react';
 import { getTvDetails, getTvSeasonDetails, imgUrl, backdropUrl } from '../api/tmdb';
@@ -28,7 +29,7 @@ export default function TvDetailPage() {
         if (firstSeason) setSelectedSeason(firstSeason.season_number);
       } catch (err) {
         console.error('Failed to load TV show:', err);
-        setError('Failed to load TV show details. Please try again.');
+        setError(err instanceof Error ? err.message : 'Failed to load TV show details. Please try again.');
       } finally {
         setLoading(false);
       }
@@ -57,6 +58,9 @@ export default function TvDetailPage() {
   if (loading) {
     return (
       <div className="loading-container" style={{ marginTop: 'var(--nav-height)' }}>
+        <Helmet>
+          <title>TV Show — StreamVault</title>
+        </Helmet>
         <div className="spinner" />
         <span className="loading-text">Loading...</span>
       </div>
@@ -66,6 +70,9 @@ export default function TvDetailPage() {
   if (error) {
     return (
       <div className="loading-container" style={{ marginTop: 'var(--nav-height)' }}>
+        <Helmet>
+          <title>Error — StreamVault</title>
+        </Helmet>
         <div className="error-message">
           <span className="error-message__icon"><AlertTriangle size={20} /></span>
           <span>{error}</span>
@@ -92,9 +99,14 @@ export default function TvDetailPage() {
   const cast = show.credits?.cast?.slice(0, 15) || [];
   const similar = show.similar?.results || [];
   const seasons = show.seasons?.filter((s) => s.season_number >= 1) || [];
+  const tvDesc = show.overview ? show.overview.slice(0, 160) : `Watch ${show.name} on StreamVault.`;
 
   return (
     <div className="detail">
+      <Helmet>
+        <title>{`${show.name}${year ? ` (${year})` : ''} — StreamVault`}</title>
+        <meta name="description" content={tvDesc} />
+      </Helmet>
       <div className="detail__backdrop-wrapper">
         <div
           className="detail__backdrop"

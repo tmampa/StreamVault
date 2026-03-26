@@ -77,6 +77,36 @@ body {
   min-height: 100vh;
 }
 
+.skip-link {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link:focus {
+  position: fixed;
+  left: 16px;
+  top: 16px;
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 12px 20px;
+  clip: auto;
+  z-index: 10001;
+  background: var(--accent-primary);
+  color: #fff;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
 a {
   color: inherit;
   text-decoration: none;
@@ -296,6 +326,42 @@ input {
   opacity: 1;
 }
 
+.hero__trailer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 1.5s ease;
+  pointer-events: none;
+}
+
+.hero__trailer.active {
+  opacity: 1;
+}
+
+.hero__trailer iframe {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 120%;
+  height: 120%;
+  transform: translate(-50%, -50%);
+  border: none;
+  object-fit: cover;
+}
+
+.hero__trailer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to right, rgba(20,20,20,0.9) 0%, rgba(20,20,20,0.4) 60%, transparent 100%),
+    linear-gradient(to top, var(--bg-primary) 0%, transparent 50%);
+  z-index: 1;
+  pointer-events: none;
+}
+
 .hero__backdrop::after {
   content: '';
   position: absolute;
@@ -310,7 +376,7 @@ input {
   bottom: 18%;
   left: var(--container-padding);
   max-width: 550px;
-  z-index: 2;
+  z-index: 3;
 }
 
 .hero__badge {
@@ -378,7 +444,7 @@ input {
   transform: translateX(-50%);
   display: flex;
   gap: 8px;
-  z-index: 2;
+  z-index: 3;
 }
 
 .hero__indicator {
@@ -611,6 +677,33 @@ input {
 
 .content-card:hover .content-card__play-btn {
   transform: scale(1);
+}
+
+.content-card__remove-btn {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--transition-fast), background var(--transition-fast);
+  z-index: 5;
+}
+
+.content-card:hover .content-card__remove-btn {
+  opacity: 1;
+}
+
+.content-card__remove-btn:hover {
+  background: var(--danger);
 }
 
 .content-card__rating {

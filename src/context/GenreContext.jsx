@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- context module exports hook + provider */
 import { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { getMovieGenres, getTvGenres } from '../api/tmdb';
 

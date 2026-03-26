@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Play, Star, Clapperboard, Check, Plus, ArrowLeft, AlertTriangle } from 'lucide-react';
 import { getMovieDetails, imgUrl, backdropUrl } from '../api/tmdb';
@@ -24,7 +25,7 @@ export default function MovieDetailPage() {
         setMovie(data);
       } catch (err) {
         console.error('Failed to load movie:', err);
-        setError('Failed to load movie details. Please try again.');
+        setError(err instanceof Error ? err.message : 'Failed to load movie details. Please try again.');
       } finally {
         setLoading(false);
       }
@@ -36,6 +37,9 @@ export default function MovieDetailPage() {
   if (loading) {
     return (
       <div className="loading-container" style={{ marginTop: 'var(--nav-height)' }}>
+        <Helmet>
+          <title>Movie — StreamVault</title>
+        </Helmet>
         <div className="spinner" />
         <span className="loading-text">Loading...</span>
       </div>
@@ -45,6 +49,9 @@ export default function MovieDetailPage() {
   if (error) {
     return (
       <div className="loading-container" style={{ marginTop: 'var(--nav-height)' }}>
+        <Helmet>
+          <title>Error — StreamVault</title>
+        </Helmet>
         <div className="error-message">
           <span className="error-message__icon"><AlertTriangle size={20} /></span>
           <span>{error}</span>
@@ -81,8 +88,14 @@ export default function MovieDetailPage() {
     }
   };
 
+  const desc = movie.overview ? movie.overview.slice(0, 160) : `Watch ${movie.title} on StreamVault.`;
+
   return (
     <div className="detail">
+      <Helmet>
+        <title>{`${movie.title}${year ? ` (${year})` : ''} — StreamVault`}</title>
+        <meta name="description" content={desc} />
+      </Helmet>
       <div className="detail__backdrop-wrapper">
         <div
           className="detail__backdrop"

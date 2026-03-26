@@ -1,11 +1,19 @@
+import { Helmet } from 'react-helmet-async';
 import { useWatchlist } from '../context/WatchlistContext';
 import ContentCard from '../components/ContentCard';
+import PreviewModal from '../components/PreviewModal';
+import { useState } from 'react';
 
 export default function WatchlistPage() {
-  const { watchlist } = useWatchlist();
+  const { watchlist, removeFromWatchlist } = useWatchlist();
+  const [modalItem, setModalItem] = useState(null);
 
   return (
     <div className="search-page">
+      <Helmet>
+        <title>My Watchlist — StreamVault</title>
+        <meta name="description" content="Your saved movies and TV shows on StreamVault." />
+      </Helmet>
       <div className="search-page__header">
         <h1 className="search-page__title">My Watchlist</h1>
         <p className="search-page__count">{watchlist.length} items</p>
@@ -20,10 +28,16 @@ export default function WatchlistPage() {
       ) : (
         <div className="search-grid">
           {watchlist.map((item) => (
-            <ContentCard key={`${item.media_type}-${item.id}`} item={item} />
+            <ContentCard
+              key={`${item.media_type}-${item.id}`}
+              item={item}
+              onOpenModal={setModalItem}
+              onRemove={(i) => removeFromWatchlist(i.id, i.media_type || (i.title ? 'movie' : 'tv'))}
+            />
           ))}
         </div>
       )}
+      {modalItem && <PreviewModal item={modalItem} onClose={() => setModalItem(null)} />}
     </div>
   );
 }

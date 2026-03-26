@@ -1,12 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Flame, Star, Play, Info } from 'lucide-react';
-import { backdropUrl } from '../api/tmdb';
+import { backdropUrl, getMovieDetails, getTvDetails } from '../api/tmdb';
 import PreviewModal from './PreviewModal';
 
 export default function HeroSection({ items }) {
   const [current, setCurrent] = useState(0);
   const [modalItem, setModalItem] = useState(null);
+  const [trailerKey, setTrailerKey] = useState(null);
+  const [videoReady, setVideoReady] = useState(false);
+  const iframeRef = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -16,6 +19,28 @@ export default function HeroSection({ items }) {
     }, 8000);
     return () => clearInterval(interval);
   }, [items]);
+
+  useEffect(() => {
+    if (!items || items.length === 0) return;
+    const featured = items.slice(0, 5);
+    const cur = featured[current];
+    if (!cur) return;
+    let cancelled = false;
+    setTrailerKey(null);
+    setVideoReady(false);
+    const type = cur.media_type || (cur.title ? 'movie' : 'tv');
+    const fetchDetails = type === 'movie' ? getMovieDetails : getTvDetails;
+    fetchDetails(cur.id)
+      .then((data) => {
+        if (cancelled) return;
+        const trailer =
+          data.videos?.results?.find((v) => v.type === 'Trailer' && v.site === 'YouTube') ||
+          data.videos?.results?.find((v) => v.site === 'YouTube');
+        if (trailer) setTrailerKey(trailer.key);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [items, current]);
 
   if (!items || items.length === 0) return null;
 
@@ -47,6 +72,18 @@ export default function HeroSection({ items }) {
           style={{ backgroundImage: f.backdrop_path ? `url(${backdropUrl(f.backdrop_path)})` : 'none' }}
         />
       ))}
+      {trailerKey && (
+        <div className={`hero__trailer ${videoReady ? 'active' : ''}`}>
+          <iframe
+            ref={iframeRef}
+            src={`https://www.youtube.com/embed/${encodeURIComponent(trailerKey)}?autoplay=1&mute=1&controls=0&showinfo=0&rel=0&modestbranding=1&iv_load_policy=3&disablekb=1&playsinline=1&loop=1&playlist=${encodeURIComponent(trailerKey)}`}
+            allow="autoplay; fullscreen; encrypted-media"
+            allowFullScreen
+            title="Trailer"
+            onLoad={() => setTimeout(() => setVideoReady(true), 1000)}
+          />
+        </div>
+      )}
       <div className="hero__content">
         <span className="hero__badge"><Flame size={16} /> Trending Now</span>
         <h1 className="hero__title">{title}</h1>
