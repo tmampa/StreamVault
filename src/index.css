@@ -326,6 +326,42 @@ input {
   opacity: 1;
 }
 
+.hero__trailer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 1.5s ease;
+  pointer-events: none;
+}
+
+.hero__trailer.active {
+  opacity: 1;
+}
+
+.hero__trailer iframe {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 120%;
+  height: 120%;
+  transform: translate(-50%, -50%);
+  border: none;
+  object-fit: cover;
+}
+
+.hero__trailer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to right, rgba(20,20,20,0.9) 0%, rgba(20,20,20,0.4) 60%, transparent 100%),
+    linear-gradient(to top, var(--bg-primary) 0%, transparent 50%);
+  z-index: 1;
+  pointer-events: none;
+}
+
 .hero__backdrop::after {
   content: '';
   position: absolute;
@@ -340,7 +376,7 @@ input {
   bottom: 18%;
   left: var(--container-padding);
   max-width: 550px;
-  z-index: 2;
+  z-index: 3;
 }
 
 .hero__badge {
@@ -408,7 +444,7 @@ input {
   transform: translateX(-50%);
   display: flex;
   gap: 8px;
-  z-index: 2;
+  z-index: 3;
 }
 
 .hero__indicator {
