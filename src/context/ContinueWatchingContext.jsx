@@ -2,19 +2,23 @@
 import { createContext, useContext, useState, useCallback, useMemo } from 'react';
 
 const ContinueWatchingContext = createContext();
-const STORAGE_KEY = 'streamvault_continue';
-const LEGACY_KEY = 'stephinah_continue';
+const STORAGE_KEY = 'owl_continue';
+const LEGACY_KEY = 'streamvault_continue';
+const LEGACY_KEY_2 = 'stephinah_continue';
 const MAX_ITEMS = 20;
 
 function loadItems() {
   try {
     const next = localStorage.getItem(STORAGE_KEY);
     if (next) return JSON.parse(next) || [];
-    const legacy = localStorage.getItem(LEGACY_KEY);
-    if (legacy) {
-      localStorage.setItem(STORAGE_KEY, legacy);
-      localStorage.removeItem(LEGACY_KEY);
-      return JSON.parse(legacy) || [];
+    // Migrate from previous brand keys
+    for (const key of [LEGACY_KEY, LEGACY_KEY_2]) {
+      const legacy = localStorage.getItem(key);
+      if (legacy) {
+        localStorage.setItem(STORAGE_KEY, legacy);
+        localStorage.removeItem(key);
+        return JSON.parse(legacy) || [];
+      }
     }
     return [];
   } catch {

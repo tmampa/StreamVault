@@ -1,8 +1,8 @@
-# StreamVault — Implement All 17 Improvements
+# Owl — Implement All 17 Improvements
 
 ## Quick Fixes
 - [x] #7 Fix SearchPage `media_type` operator precedence bug
-- [x] #10 Fix [package.json](file:///c:/Users/tmamp/Desktop/StreamVault/package.json) name from `"scratch"` to `"streamvault"`
+- [x] #10 Fix [package.json](file:///c:/Users/tmamp/Desktop/StreamVault/package.json) name from `\"scratch\"` to `\"owl\"`
 - [x] #12 Optimize backdrop images to `w1280` instead of `original`
 - [x] #13 Fix key uniqueness in search results
 

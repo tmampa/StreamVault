@@ -100,7 +100,7 @@ export default function WatchPage() {
     return (
       <div className="loading-container" style={{ marginTop: 'var(--nav-height)' }}>
         <Helmet>
-          <title>Watch — StreamVault</title>
+          <title>Watch — Owl</title>
         </Helmet>
         <div className="spinner" />
         <span className="loading-text">Loading...</span>
@@ -112,7 +112,7 @@ export default function WatchPage() {
     return (
       <div className="loading-container" style={{ marginTop: 'var(--nav-height)' }}>
         <Helmet>
-          <title>Error — StreamVault</title>
+          <title>Error — Owl</title>
         </Helmet>
         <div className="error-message">
           <span className="error-message__icon">
@@ -135,13 +135,13 @@ export default function WatchPage() {
   return (
     <div className="watch">
       <Helmet>
-        <title>{`${title} — Watch — StreamVault`}</title>
+        <title>{`${title} — Watch — Owl`}</title>
         <meta
           name="description"
           content={
             isMovie
-              ? `Watch ${details.title || 'this title'} on StreamVault.`
-              : `Watch ${details.name || 'this show'} S${season}E${episode} on StreamVault.`
+              ? `Watch ${details.title || 'this title'} on Owl.`
+              : `Watch ${details.name || 'this show'} S${season}E${episode} on Owl.`
           }
         />
       </Helmet>

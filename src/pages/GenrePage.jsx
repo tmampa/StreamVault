@@ -63,8 +63,8 @@ export default function GenrePage() {
   return (
     <div className="search-page">
       <Helmet>
-        <title>{heading} — StreamVault</title>
-        <meta name="description" content={`Browse ${heading.toLowerCase()} on StreamVault.`} />
+        <title>{heading} — Owl</title>
+        <meta name="description" content={`Browse ${heading.toLowerCase()} on Owl.`} />
       </Helmet>
       <div className="search-page__header">
         <h1 className="search-page__title">

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Search, Play } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { useWatchlist } from '../context/WatchlistContext';
 
 export default function Navbar() {
@@ -47,8 +47,17 @@ export default function Navbar() {
     <nav className={`navbar ${scrolled ? 'scrolled' : ''}`}>
       <div className="navbar__inner">
         <Link to="/" className="navbar__logo">
-          <span className="navbar__logo-icon"><Play size={18} fill="currentColor" /></span>
-          StreamVault
+          <span className="navbar__logo-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="9" cy="10" r="2.5" fill="currentColor" />
+              <circle cx="15" cy="10" r="2.5" fill="currentColor" />
+              <path d="M4 20c0-4 3.5-7 8-7s8 3 8 7" />
+              <path d="M6 4c-1-1-2.5-.5-2.5 1C3.5 7 5 9 7 10" />
+              <path d="M18 4c1-1 2.5-.5 2.5 1C20.5 7 19 9 17 10" />
+              <path d="M12 17v3" />
+            </svg>
+          </span>
+          Owl
         </Link>
 
         <ul className={`navbar__links ${menuOpen ? 'open' : ''}`}>

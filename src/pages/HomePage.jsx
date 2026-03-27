@@ -61,7 +61,7 @@ export default function HomePage() {
     return (
       <div>
         <Helmet>
-          <title>StreamVault — Home</title>
+          <title>Owl — Home</title>
           <meta name="description" content="Discover trending movies and TV shows." />
         </Helmet>
         <div className="hero skeleton-hero">
@@ -78,7 +78,7 @@ export default function HomePage() {
     return (
       <div style={{ paddingTop: 'var(--nav-height)' }}>
         <Helmet>
-          <title>StreamVault — Error</title>
+          <title>Owl — Error</title>
         </Helmet>
         <div className="error-banner">
           <span><AlertTriangle size={16} /> {error}</span>
@@ -91,7 +91,7 @@ export default function HomePage() {
   return (
     <div>
       <Helmet>
-        <title>StreamVault — Home</title>
+        <title>Owl — Home</title>
         <meta name="description" content="Trending movies and TV, popular picks, and your continue watching list." />
       </Helmet>
       <HeroSection items={trending} />

@@ -110,13 +110,13 @@ export default function SearchPage() {
     : 'Discover';
 
   const metaDesc = query
-    ? `Search results for "${query}" on StreamVault.`
-    : 'Browse and filter movies and TV shows on StreamVault.';
+    ? `Search results for "${query}" on Owl.`
+    : 'Browse and filter movies and TV shows on Owl.';
 
   return (
     <div className="search-page">
       <Helmet>
-        <title>{pageTitle} — StreamVault</title>
+        <title>{pageTitle} — Owl</title>
         <meta name="description" content={metaDesc} />
       </Helmet>
       <div className="search-page__header">

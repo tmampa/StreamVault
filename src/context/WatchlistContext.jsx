@@ -3,18 +3,22 @@ import { createContext, useContext, useState, useEffect } from 'react';
 
 const WatchlistContext = createContext();
 
-const STORAGE_KEY = 'streamvault_watchlist';
-const LEGACY_KEY = 'stephinah_watchlist';
+const STORAGE_KEY = 'owl_watchlist';
+const LEGACY_KEY = 'streamvault_watchlist';
+const LEGACY_KEY_2 = 'stephinah_watchlist';
 
 function loadWatchlist() {
   try {
     const next = localStorage.getItem(STORAGE_KEY);
     if (next) return JSON.parse(next) || [];
-    const legacy = localStorage.getItem(LEGACY_KEY);
-    if (legacy) {
-      localStorage.setItem(STORAGE_KEY, legacy);
-      localStorage.removeItem(LEGACY_KEY);
-      return JSON.parse(legacy) || [];
+    // Migrate from previous brand keys
+    for (const key of [LEGACY_KEY, LEGACY_KEY_2]) {
+      const legacy = localStorage.getItem(key);
+      if (legacy) {
+        localStorage.setItem(STORAGE_KEY, legacy);
+        localStorage.removeItem(key);
+        return JSON.parse(legacy) || [];
+      }
     }
     return [];
   } catch {

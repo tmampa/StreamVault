@@ -24,7 +24,7 @@ function PageLoading() {
 function Footer() {
   return (
     <footer className="footer">
-      <div className="footer__brand">StreamVault</div>
+      <div className="footer__brand">Owl</div>
       <p className="footer__text">
         Powered by TMDB & VidKing · Third-party playback may be subject to separate terms.
       </p>
