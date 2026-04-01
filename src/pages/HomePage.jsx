@@ -61,7 +61,7 @@ export default function HomePage() {
     return (
       <div>
         <Helmet>
-          <title>StreamVault — Home</title>
+          <title>Tshiamo — Home</title>
           <meta name="description" content="Discover trending movies and TV shows." />
         </Helmet>
         <div className="hero skeleton-hero">
