@@ -3,7 +3,7 @@ import { createContext, useContext, useState, useEffect } from 'react';
 
 const WatchlistContext = createContext();
 
-const STORAGE_KEY = 'streamvault_watchlist';
+const STORAGE_KEY = 'tshiamo_watchlist';
 const LEGACY_KEY = 'stephinah_watchlist';
 
 function loadWatchlist() {

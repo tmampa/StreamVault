@@ -2,7 +2,7 @@
 import { createContext, useContext, useState, useCallback, useMemo } from 'react';
 
 const ContinueWatchingContext = createContext();
-const STORAGE_KEY = 'streamvault_continue';
+const STORAGE_KEY = 'tshiamo_continue';
 const LEGACY_KEY = 'stephinah_continue';
 const MAX_ITEMS = 20;
 

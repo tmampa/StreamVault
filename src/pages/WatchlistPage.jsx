@@ -11,8 +11,8 @@ export default function WatchlistPage() {
   return (
     <div className="search-page">
       <Helmet>
-        <title>My Watchlist — StreamVault</title>
-        <meta name="description" content="Your saved movies and TV shows on StreamVault." />
+        <title>My Watchlist — Tshiamo</title>
+        <meta name="description" content="Your saved movies and TV shows on Tshiamo." />
       </Helmet>
       <div className="search-page__header">
         <h1 className="search-page__title">My Watchlist</h1>
