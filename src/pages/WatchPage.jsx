@@ -151,12 +151,14 @@ export default function WatchPage() {
   }, [autoNextEnabled, nextEpisodeTarget]);
 
   const navigateToEpisode = useCallback(
-    (target) => {
+    (target, options = {}) => {
       if (!target) {
         return;
       }
 
-      navigate(`/watch/tv/${tmdbId}/${target.season}/${target.episode}`);
+      navigate(`/watch/tv/${tmdbId}/${target.season}/${target.episode}`, {
+        replace: options.replace === true,
+      });
     },
     [navigate, tmdbId]
   );
@@ -167,9 +169,9 @@ export default function WatchPage() {
     }
   }, [episode, navigate, season, tmdbId]);
 
-  const handleNextEpisode = useCallback(() => {
+  const handleNextEpisode = useCallback((options) => {
     setCountdownRemaining(null);
-    navigateToEpisode(nextEpisodeTarget);
+    navigateToEpisode(nextEpisodeTarget, options);
   }, [navigateToEpisode, nextEpisodeTarget]);
 
   const handleAutoNextToggle = useCallback(() => {
@@ -218,7 +220,7 @@ export default function WatchPage() {
     }
 
     if (countdownRemaining <= 0) {
-      handleNextEpisode();
+      handleNextEpisode({ replace: true });
       return undefined;
     }
 
