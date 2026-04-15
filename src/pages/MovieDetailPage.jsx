@@ -38,7 +38,7 @@ export default function MovieDetailPage() {
     return (
       <div className="loading-container" style={{ marginTop: 'var(--nav-height)' }}>
         <Helmet>
-          <title>Movie — Tshiamo</title>
+          <title>Movie — TM</title>
         </Helmet>
         <div className="spinner" />
         <span className="loading-text">Loading...</span>
@@ -50,7 +50,7 @@ export default function MovieDetailPage() {
     return (
       <div className="loading-container" style={{ marginTop: 'var(--nav-height)' }}>
         <Helmet>
-          <title>Error — Tshiamo</title>
+          <title>Error — TM</title>
         </Helmet>
         <div className="error-message">
           <span className="error-message__icon"><AlertTriangle size={20} /></span>
@@ -88,12 +88,12 @@ export default function MovieDetailPage() {
     }
   };
 
-  const desc = movie.overview ? movie.overview.slice(0, 160) : `Watch ${movie.title} on Tshiamo.`;
+  const desc = movie.overview ? movie.overview.slice(0, 160) : `Watch ${movie.title} on TM.`;
 
   return (
     <div className="detail">
       <Helmet>
-        <title>{`${movie.title}${year ? ` (${year})` : ''} — Tshiamo`}</title>
+        <title>{`${movie.title}${year ? ` (${year})` : ''} — TM`}</title>
         <meta name="description" content={desc} />
       </Helmet>
       <div className="detail__backdrop-wrapper">

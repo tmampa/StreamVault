@@ -59,7 +59,7 @@ export default function TvDetailPage() {
     return (
       <div className="loading-container" style={{ marginTop: 'var(--nav-height)' }}>
         <Helmet>
-          <title>TV Show — Tshiamo</title>
+          <title>TV Show — TM</title>
         </Helmet>
         <div className="spinner" />
         <span className="loading-text">Loading...</span>
@@ -71,7 +71,7 @@ export default function TvDetailPage() {
     return (
       <div className="loading-container" style={{ marginTop: 'var(--nav-height)' }}>
         <Helmet>
-          <title>Error — Tshiamo</title>
+          <title>Error — TM</title>
         </Helmet>
         <div className="error-message">
           <span className="error-message__icon"><AlertTriangle size={20} /></span>
@@ -99,12 +99,12 @@ export default function TvDetailPage() {
   const cast = show.credits?.cast?.slice(0, 15) || [];
   const similar = show.similar?.results || [];
   const seasons = show.seasons?.filter((s) => s.season_number >= 1) || [];
-  const tvDesc = show.overview ? show.overview.slice(0, 160) : `Watch ${show.name} on Tshiamo.`;
+  const tvDesc = show.overview ? show.overview.slice(0, 160) : `Watch ${show.name} on TM.`;
 
   return (
     <div className="detail">
       <Helmet>
-        <title>{`${show.name}${year ? ` (${year})` : ''} — Tshiamo`}</title>
+        <title>{`${show.name}${year ? ` (${year})` : ''} — TM`}</title>
         <meta name="description" content={tvDesc} />
       </Helmet>
       <div className="detail__backdrop-wrapper">

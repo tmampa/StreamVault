@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tshiamo-v1';
+const CACHE_NAME = 'owl-v1';
 
 self.addEventListener('install', (event) => {
   event.waitUntil(

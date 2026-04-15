@@ -1,11 +1,11 @@
 {
-  "name": "Tshiamo — Movies & TV",
-  "short_name": "Tshiamo",
+  "name": "TM — Movies & TV",
+  "short_name": "TM",
   "description": "Discover movies and TV shows. Powered by TMDB.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0a0a0f",
-  "theme_color": "#0a0a0f",
+  "background_color": "#0c0a1a",
+  "theme_color": "#0c0a1a",
   "orientation": "any",
   "icons": [
     {
