@@ -2,33 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Search, X } from 'lucide-react';
 import { useWatchlist } from '../context/WatchlistContext';
-
-const RECENT_SEARCHES_KEY = 'owl_recent_searches';
-const MAX_RECENT = 8;
-
-function loadRecentSearches() {
-  try {
-    return JSON.parse(localStorage.getItem(RECENT_SEARCHES_KEY)) || [];
-  } catch {
-    return [];
-  }
-}
-
-function saveRecentSearch(query) {
-  const recent = loadRecentSearches().filter((q) => q !== query);
-  recent.unshift(query);
-  localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(recent.slice(0, MAX_RECENT)));
-}
-
-export function clearRecentSearches() {
-  localStorage.removeItem(RECENT_SEARCHES_KEY);
-}
-
-export function getRecentSearches() {
-  return loadRecentSearches();
-}
-
-export { saveRecentSearch };
+import { clearRecentSearches, getRecentSearches, saveRecentSearch } from '../recentSearches';
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -136,7 +110,7 @@ export default function Navbar() {
     const opening = !searchOpen;
     setSearchOpen(opening);
     if (opening) {
-      setRecentSearches(loadRecentSearches());
+      setRecentSearches(getRecentSearches());
       setShowDropdown(true);
       setTimeout(() => searchRef.current?.focus(), 100);
     } else {
@@ -145,7 +119,7 @@ export default function Navbar() {
   };
 
   const handleFocus = () => {
-    setRecentSearches(loadRecentSearches());
+    setRecentSearches(getRecentSearches());
     if (!searchQuery) setShowDropdown(true);
   };
 
