@@ -6,7 +6,7 @@ import ContentCard from '../components/ContentCard';
 import PreviewModal from '../components/PreviewModal';
 import SkeletonCard from '../components/SkeletonCard';
 import { searchMulti, discoverMovies, discoverTv, getMovieGenres, getTvGenres, getTrending } from '../api/tmdb';
-import { getRecentSearches, saveRecentSearch, clearRecentSearches } from '../components/Navbar';
+import { getRecentSearches, saveRecentSearch, clearRecentSearches } from '../recentSearches';
 
 export default function SearchPage() {
   const [searchParams] = useSearchParams();
