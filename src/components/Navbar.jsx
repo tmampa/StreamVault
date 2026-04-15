@@ -173,7 +173,7 @@ export default function Navbar() {
               <path d="M12 17v3" />
             </svg>
           </span>
-          Owl
+          TM
         </Link>
 
         <ul className={`navbar__links ${menuOpen ? 'open' : ''}`}>

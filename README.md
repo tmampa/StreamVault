@@ -1,6 +1,6 @@
-# Owl
+# TM
 
-Browse movies and TV shows with data from [The Movie Database (TMDB)](https://www.themoviedb.org/). Owl includes search, genres, a watchlist, continue watching (stored locally in your browser), trailers, and embedded playback via VidKing.
+Browse movies and TV shows with data from [The Movie Database (TMDB)](https://www.themoviedb.org/). TM includes search, genres, a watchlist, continue watching (stored locally in your browser), trailers, and embedded playback via VidKing.
 
 ## Prerequisites
 

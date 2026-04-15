@@ -1,6 +1,6 @@
 {
-  "name": "Owl — Movies & TV",
-  "short_name": "Owl",
+  "name": "TM — Movies & TV",
+  "short_name": "TM",
   "description": "Discover movies and TV shows. Powered by TMDB.",
   "start_url": "/",
   "display": "standalone",

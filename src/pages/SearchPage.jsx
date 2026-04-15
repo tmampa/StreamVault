@@ -183,13 +183,13 @@ export default function SearchPage() {
     : 'Discover';
 
   const metaDesc = query
-    ? `Search results for "${query}" on Owl.`
-    : 'Browse and filter movies and TV shows on Owl.';
+    ? `Search results for "${query}" on TM.`
+    : 'Browse and filter movies and TV shows on TM.';
 
   return (
     <div className="search-page">
       <Helmet>
-        <title>{pageTitle} — Owl</title>
+        <title>{pageTitle} — TM</title>
         <meta name="description" content={metaDesc} />
       </Helmet>
 

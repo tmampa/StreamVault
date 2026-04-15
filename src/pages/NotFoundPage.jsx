@@ -6,7 +6,7 @@ export default function NotFoundPage() {
   return (
     <div className="not-found">
       <Helmet>
-        <title>Page not found — Owl</title>
+        <title>Page not found — TM</title>
         <meta name="robots" content="noindex" />
       </Helmet>
       <h1 className="not-found__title">404</h1>
