@@ -1,21 +1,61 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, SlidersHorizontal } from 'lucide-react';
 import ContentCard from '../components/ContentCard';
 import SkeletonCard from '../components/SkeletonCard';
 import { discoverMovies, discoverTv, getMovieGenres, getTvGenres } from '../api/tmdb';
+import {
+  applyContentFilters,
+  buildDiscoverParams,
+  DEFAULT_DISCOVERY_SORT,
+  LANGUAGE_OPTIONS,
+  RATING_OPTIONS,
+  SORT_OPTIONS,
+  YEAR_OPTIONS,
+} from '../discoveryFilters';
+
+const DEFAULT_TYPE = 'movie';
 
 export default function GenrePage() {
   const { id } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
-  const type = searchParams.get('type') || 'movie';
+  const type = searchParams.get('type') || DEFAULT_TYPE;
+  const selectedSort = searchParams.get('sort') || DEFAULT_DISCOVERY_SORT;
+  const minRating = searchParams.get('rating') || '';
+  const selectedYear = searchParams.get('year') || '';
+  const selectedLanguage = searchParams.get('language') || '';
   const [results, setResults] = useState([]);
   const [genreName, setGenreName] = useState('');
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [error, setError] = useState(null);
+  const hasAdvancedFilters =
+    selectedSort !== DEFAULT_DISCOVERY_SORT ||
+    Boolean(minRating) ||
+    Boolean(selectedYear) ||
+    Boolean(selectedLanguage);
+
+  const updateGenreParams = useCallback((updates, options = {}) => {
+    const nextParams = new URLSearchParams(searchParams);
+
+    Object.entries(updates).forEach(([key, value]) => {
+      const nextValue = value == null ? '' : String(value);
+
+      if (
+        nextValue === '' ||
+        (key === 'type' && nextValue === DEFAULT_TYPE) ||
+        (key === 'sort' && nextValue === DEFAULT_DISCOVERY_SORT)
+      ) {
+        nextParams.delete(key);
+      } else {
+        nextParams.set(key, nextValue);
+      }
+    });
+
+    setSearchParams(nextParams, { replace: options.replace ?? true });
+  }, [searchParams, setSearchParams]);
 
   useEffect(() => {
     async function loadGenreName() {
@@ -33,29 +73,64 @@ export default function GenrePage() {
   useEffect(() => {
     setPage(1);
     setResults([]);
-  }, [id, type]);
+  }, [id, type, selectedSort, minRating, selectedYear, selectedLanguage]);
 
   useEffect(() => {
+    let cancelled = false;
+
     async function loadResults() {
       setLoading(true);
       setError(null);
       try {
         const discover = type === 'tv' ? discoverTv : discoverMovies;
-        const data = await discover({ with_genres: id, page });
-        setResults((prev) => (page === 1 ? data.results || [] : [...prev, ...(data.results || [])]));
+        const data = await discover(buildDiscoverParams({
+          page,
+          mediaType: type,
+          genre: id,
+          minRating,
+          year: selectedYear,
+          language: selectedLanguage,
+          sort: selectedSort,
+        }));
+
+        if (cancelled) {
+          return;
+        }
+
+        const incomingItems = (data.results || []).map((item) => ({ ...item, media_type: type }));
+        setResults((prev) => applyContentFilters(page === 1 ? incomingItems : [...prev, ...incomingItems], {
+          type,
+          genre: id,
+          minRating,
+          year: selectedYear,
+          language: selectedLanguage,
+          sort: selectedSort,
+        }));
         setTotalPages(data.total_pages || 1);
       } catch (err) {
         console.error('Failed to load genre results:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load results. Please try again.');
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : 'Failed to load results. Please try again.');
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     }
     loadResults();
-  }, [id, type, page]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [id, type, page, selectedSort, minRating, selectedYear, selectedLanguage]);
 
   const handleTypeChange = (newType) => {
-    setSearchParams({ type: newType });
+    updateGenreParams({ type: newType }, { replace: true });
+  };
+
+  const handleResetFilters = () => {
+    updateGenreParams({ sort: DEFAULT_DISCOVERY_SORT, rating: '', year: '', language: '' }, { replace: false });
   };
 
   const heading = `${genreName || 'Genre'} ${type === 'tv' ? 'TV Shows' : 'Movies'}`;
@@ -73,19 +148,83 @@ export default function GenrePage() {
         <p className="search-page__count">{results.length} results</p>
       </div>
 
-      <div className="search-page__filters">
-        <button
-          className={`filter-btn ${type === 'movie' ? 'active' : ''}`}
-          onClick={() => handleTypeChange('movie')}
-        >
-          Movies
-        </button>
-        <button
-          className={`filter-btn ${type === 'tv' ? 'active' : ''}`}
-          onClick={() => handleTypeChange('tv')}
-        >
-          TV Shows
-        </button>
+      <div className="search-page__filters-panel">
+        <div className="search-page__filters-meta">
+          <span className="search-page__filters-label">
+            <SlidersHorizontal size={16} /> Refine This Genre
+          </span>
+          {hasAdvancedFilters && (
+            <button type="button" className="search-page__filters-reset" onClick={handleResetFilters}>
+              Reset filters
+            </button>
+          )}
+        </div>
+
+        <div className="search-page__filters">
+          <button
+            className={`filter-btn ${type === 'movie' ? 'active' : ''}`}
+            onClick={() => handleTypeChange('movie')}
+          >
+            Movies
+          </button>
+          <button
+            className={`filter-btn ${type === 'tv' ? 'active' : ''}`}
+            onClick={() => handleTypeChange('tv')}
+          >
+            TV Shows
+          </button>
+
+          <div className="search-page__filter-selects">
+            <select
+              className="genre-select search-page__filter-select"
+              value={selectedSort}
+              onChange={(e) => updateGenreParams({ sort: e.target.value }, { replace: true })}
+            >
+              {SORT_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+
+            <select
+              className="genre-select search-page__filter-select"
+              value={minRating}
+              onChange={(e) => updateGenreParams({ rating: e.target.value }, { replace: true })}
+            >
+              {RATING_OPTIONS.map((option) => (
+                <option key={option.value || 'all'} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+
+            <select
+              className="genre-select search-page__filter-select"
+              value={selectedYear}
+              onChange={(e) => updateGenreParams({ year: e.target.value }, { replace: true })}
+            >
+              <option value="">All Years</option>
+              {YEAR_OPTIONS.map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </select>
+
+            <select
+              className="genre-select search-page__filter-select"
+              value={selectedLanguage}
+              onChange={(e) => updateGenreParams({ language: e.target.value }, { replace: true })}
+            >
+              {LANGUAGE_OPTIONS.map((option) => (
+                <option key={option.value || 'all'} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
       </div>
 
       {error && (
