@@ -7,7 +7,7 @@ import { useContinueWatching } from '../context/ContinueWatchingContext';
 import { AlertTriangle, Play, Flame, Clapperboard, Tv, Star, Trophy, CalendarDays, Sparkles, Globe2, Zap } from 'lucide-react';
 import { discoverMovies, discoverTv, getTrending, getPopularMovies, getPopularTv, getTopRatedMovies, getTopRatedTv } from '../api/tmdb';
 import { buildDiscoverParams } from '../discoveryFilters';
-import { HOME_CURATIONS } from '../homeCurations';
+import { buildHeroShowcase, HOME_CURATIONS } from '../homeCurations';
 
 function SkeletonRow() {
   return (
@@ -31,6 +31,7 @@ export default function HomePage() {
   const [topRatedMovies, setTopRatedMovies] = useState([]);
   const [topRatedTv, setTopRatedTv] = useState([]);
   const [curatedRows, setCuratedRows] = useState([]);
+  const [heroItems, setHeroItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { items: continueWatchingItems, removeFromHistory } = useContinueWatching();
@@ -75,16 +76,18 @@ export default function HomePage() {
           }),
         );
 
-        setTrending(trendRes.results || []);
+        const trendingItems = trendRes.results || [];
+        const successfulCuratedRows = curatedResults
+          .filter((result) => result.status === 'fulfilled' && result.value.items.length > 0)
+          .map((result) => result.value);
+
+        setTrending(trendingItems);
         setPopularMovies(popMovRes.results || []);
         setPopularTv(popTvRes.results || []);
         setTopRatedMovies(topMovRes.results || []);
         setTopRatedTv(topTvRes.results || []);
-        setCuratedRows(
-          curatedResults
-            .filter((result) => result.status === 'fulfilled' && result.value.items.length > 0)
-            .map((result) => result.value),
-        );
+        setCuratedRows(successfulCuratedRows);
+        setHeroItems(buildHeroShowcase(trendingItems, successfulCuratedRows));
       } catch (err) {
         console.error('Failed to load homepage data:', err);
         setError(err instanceof Error ? err.message : 'Failed to load content. Please try again later.');
@@ -132,7 +135,7 @@ export default function HomePage() {
         <title>TM — Home</title>
         <meta name="description" content="Trending movies and TV, popular picks, and your continue watching list." />
       </Helmet>
-      <HeroSection items={trending} />
+      <HeroSection items={heroItems.length > 0 ? heroItems : trending} />
       {continueWatchingItems.length > 0 && (
         <ContentRow
           title={<><Play size={18} fill="currentColor" /> Continue Watching</>}
