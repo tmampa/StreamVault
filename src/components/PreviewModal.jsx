@@ -53,6 +53,11 @@ export default function PreviewModal({ item, onClose }) {
 
   const handlePlay = () => {
     onClose();
+    if (typeof item.linkTo === 'string' && item.linkTo.startsWith('/watch/')) {
+      navigate(item.linkTo);
+      return;
+    }
+
     if (mediaType === 'movie') {
       navigate(`/watch/movie/${item.id}`);
     } else {

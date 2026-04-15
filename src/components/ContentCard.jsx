@@ -20,6 +20,10 @@ export default function ContentCard({ item, onOpenModal, onRemove }) {
   const poster = imgUrl(item.poster_path, 'w342');
   const linkTo = item.linkTo || `/${mediaType}/${item.id}`;
   const inWatchlist = isInWatchlist(item.id, mediaType);
+  const progressPercent = Number.isFinite(Number(item.progressPercent))
+    ? Math.max(0, Math.min(100, Number(item.progressPercent)))
+    : null;
+  const episodeLabel = mediaType === 'tv' && item.season && item.episode ? `S${item.season}E${item.episode}` : null;
 
   const genres = (item.genre_ids || [])
     .slice(0, 3)
@@ -37,6 +41,11 @@ export default function ContentCard({ item, onOpenModal, onRemove }) {
 
   const handlePlay = (e) => {
     e.stopPropagation();
+    if (typeof item.linkTo === 'string' && item.linkTo.startsWith('/watch/')) {
+      navigate(item.linkTo);
+      return;
+    }
+
     if (mediaType === 'movie') {
       navigate(`/watch/movie/${item.id}`);
     } else {
@@ -82,6 +91,11 @@ export default function ContentCard({ item, onOpenModal, onRemove }) {
           <span className={`content-card__rating content-card__rating--${rating >= 7 ? 'high' : rating >= 5 ? 'mid' : 'low'}`}>
             <Star size={12} fill="currentColor" /> {rating}
           </span>
+        )}
+        {progressPercent !== null && progressPercent > 0 && (
+          <div className="content-card__progress" aria-hidden="true">
+            <span className="content-card__progress-bar" style={{ width: `${progressPercent}%` }} />
+          </div>
         )}
         {onRemove && (
           <button
@@ -132,6 +146,10 @@ export default function ContentCard({ item, onOpenModal, onRemove }) {
         <div className="content-card__info">
           <div className="content-card__title">{title}</div>
           {year && <div className="content-card__year">{year}</div>}
+          {episodeLabel && <div className="content-card__progress-label">{episodeLabel}</div>}
+          {progressPercent !== null && progressPercent > 0 && (
+            <div className="content-card__progress-text">{Math.round(progressPercent)}% watched</div>
+          )}
         </div>
       )}
     </div>

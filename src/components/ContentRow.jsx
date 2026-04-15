@@ -39,7 +39,12 @@ export default function ContentRow({ title, items, seeAllLink, onRemove }) {
         </button>
         <div className="content-row" ref={rowRef}>
           {items.map((item) => (
-            <ContentCard key={item.id} item={item} onOpenModal={setModalItem} onRemove={onRemove} />
+            <ContentCard
+              key={item.linkTo || `${item.media_type || (item.title ? 'movie' : 'tv')}-${item.id}-${item.season ?? 0}-${item.episode ?? 0}`}
+              item={item}
+              onOpenModal={setModalItem}
+              onRemove={onRemove}
+            />
           ))}
         </div>
         <button

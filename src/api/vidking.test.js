@@ -3,11 +3,12 @@ import { getTvEmbedUrl, parsePlayerEventMessage, VIDKING_ORIGIN } from './vidkin
 
 describe('vidking helpers', () => {
   it('builds tv embed URLs with episode controls enabled by default', () => {
-    const url = new URL(getTvEmbedUrl(1399, 1, 2, { color: 'f59e0b', autoplay: true }));
+    const url = new URL(getTvEmbedUrl(1399, 1, 2, { color: 'f59e0b', autoplay: true, progress: 245.7 }));
 
     expect(`${url.origin}${url.pathname}`).toBe('https://www.vidking.net/embed/tv/1399/1/2');
     expect(url.searchParams.get('color')).toBe('f59e0b');
     expect(url.searchParams.get('autoPlay')).toBe('true');
+    expect(url.searchParams.get('progress')).toBe('245');
     expect(url.searchParams.get('episodeSelector')).toBe('true');
     expect(url.searchParams.get('nextEpisode')).toBe('true');
   });

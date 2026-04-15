@@ -1,13 +1,18 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react';
 import VideoPlayer from '../components/VideoPlayer';
 import { getMovieDetails, getTvDetails, getTvSeasonDetails } from '../api/tmdb';
 import { useContinueWatching } from '../context/ContinueWatchingContext';
+import { createProgressSnapshot, getContinueWatchingKey } from '../context/continueWatching';
 
 const AUTO_NEXT_STORAGE_KEY = 'tm_auto_next_enabled';
 const AUTO_NEXT_DELAY_SECONDS = 6;
+const MIN_PROGRESS_SECONDS = 5;
+const PROGRESS_CHECKPOINT_SECONDS = 15;
+const RESUME_COMPLETION_PERCENT = 95;
+const RESUME_BUFFER_SECONDS = 60;
 
 function loadAutoNextPreference() {
   try {
@@ -29,7 +34,9 @@ export default function WatchPage() {
   const [retryKey, setRetryKey] = useState(0);
   const [autoNextEnabled, setAutoNextEnabled] = useState(loadAutoNextPreference);
   const [countdownRemaining, setCountdownRemaining] = useState(null);
-  const { addToHistory } = useContinueWatching();
+  const lastSavedCheckpointRef = useRef(-1);
+  const lastSavedProgressRef = useRef(0);
+  const { items, addToHistory, updateProgress, removeFromHistory } = useContinueWatching();
 
   const isMovie = !params.season;
   const tmdbId = params.id;
@@ -51,14 +58,6 @@ export default function WatchPage() {
           const data = await getMovieDetails(tmdbId);
           if (cancelled) return;
           setDetails(data);
-          addToHistory({
-            id: parseInt(tmdbId, 10),
-            media_type: 'movie',
-            title: data.title,
-            poster_path: data.poster_path,
-            vote_average: data.vote_average,
-            release_date: data.release_date,
-          });
         } else {
           const [showData, seasonData] = await Promise.all([
             getTvDetails(tmdbId),
@@ -70,16 +69,6 @@ export default function WatchPage() {
           setSeasonEpisodes(episodes);
           const ep = episodes.find((e) => e.episode_number === episode);
           setEpisodeInfo(ep || null);
-          addToHistory({
-            id: parseInt(tmdbId, 10),
-            media_type: 'tv',
-            name: showData.name,
-            poster_path: showData.poster_path,
-            vote_average: showData.vote_average,
-            first_air_date: showData.first_air_date,
-            season,
-            episode,
-          });
         }
       } catch (err) {
         console.error('Failed to load watch data:', err);
@@ -96,7 +85,7 @@ export default function WatchPage() {
     return () => {
       cancelled = true;
     };
-  }, [tmdbId, season, episode, isMovie, addToHistory, retryKey]);
+  }, [tmdbId, season, episode, isMovie, retryKey]);
 
   useEffect(() => {
     try {
@@ -111,6 +100,76 @@ export default function WatchPage() {
   }, [tmdbId, season, episode]);
 
   const title = details?.title || details?.name || 'Loading...';
+
+  const historyEntry = useMemo(() => {
+    if (!details) {
+      return null;
+    }
+
+    return isMovie
+      ? {
+          id: parseInt(tmdbId, 10),
+          media_type: 'movie',
+          title: details.title,
+          poster_path: details.poster_path,
+          vote_average: details.vote_average,
+          release_date: details.release_date,
+        }
+      : {
+          id: parseInt(tmdbId, 10),
+          media_type: 'tv',
+          name: details.name,
+          poster_path: details.poster_path,
+          vote_average: details.vote_average,
+          first_air_date: details.first_air_date,
+          season,
+          episode,
+        };
+  }, [details, episode, isMovie, season, tmdbId]);
+
+  const historyLookupKey = useMemo(
+    () => getContinueWatchingKey({ id: parseInt(tmdbId, 10), media_type: isMovie ? 'movie' : 'tv' }),
+    [isMovie, tmdbId],
+  );
+
+  const currentHistoryItem = useMemo(
+    () => items.find((item) => getContinueWatchingKey(item) === historyLookupKey) || null,
+    [historyLookupKey, items],
+  );
+
+  const resumeStartTime = useMemo(() => {
+    if (!currentHistoryItem) {
+      return 0;
+    }
+
+    if (!isMovie && (currentHistoryItem.season !== season || currentHistoryItem.episode !== episode)) {
+      return 0;
+    }
+
+    const progressSeconds = Number(currentHistoryItem.progressSeconds) || 0;
+    const durationSeconds = Number(currentHistoryItem.durationSeconds) || 0;
+    const progressPercent = Number(currentHistoryItem.progressPercent) || 0;
+
+    if (progressSeconds < MIN_PROGRESS_SECONDS) {
+      return 0;
+    }
+
+    if (progressPercent >= RESUME_COMPLETION_PERCENT) {
+      return 0;
+    }
+
+    if (durationSeconds > 0 && durationSeconds - progressSeconds <= RESUME_BUFFER_SECONDS) {
+      return 0;
+    }
+
+    return progressSeconds;
+  }, [currentHistoryItem, isMovie, season, episode]);
+
+  const routePlaybackKey = `${isMovie ? 'movie' : 'tv'}-${tmdbId}-${season}-${episode}`;
+  const [playerResumeState, setPlayerResumeState] = useState(() => ({
+    routePlaybackKey,
+    startTime: resumeStartTime,
+  }));
 
   const nextEpisodeTarget = useMemo(() => {
     if (isMovie || !details) {
@@ -144,11 +203,36 @@ export default function WatchPage() {
     ? `Season ${nextEpisodeTarget.season}, Episode ${nextEpisodeTarget.episode}${nextEpisodeInfo?.name ? ` — ${nextEpisodeInfo.name}` : ''}`
     : 'You are on the latest available episode.';
 
+  const nextHistoryEntry = useMemo(() => {
+    if (!historyEntry || !nextEpisodeTarget || isMovie) {
+      return null;
+    }
+
+    return {
+      ...historyEntry,
+      season: nextEpisodeTarget.season,
+      episode: nextEpisodeTarget.episode,
+    };
+  }, [historyEntry, isMovie, nextEpisodeTarget]);
+
   useEffect(() => {
     if (!autoNextEnabled || !nextEpisodeTarget) {
       setCountdownRemaining(null);
     }
   }, [autoNextEnabled, nextEpisodeTarget]);
+
+  useEffect(() => {
+    setPlayerResumeState((currentValue) => (
+      currentValue.routePlaybackKey === routePlaybackKey
+        ? currentValue
+        : { routePlaybackKey, startTime: resumeStartTime }
+    ));
+  }, [resumeStartTime, routePlaybackKey]);
+
+  useEffect(() => {
+    lastSavedCheckpointRef.current = Math.floor(resumeStartTime / PROGRESS_CHECKPOINT_SECONDS);
+    lastSavedProgressRef.current = resumeStartTime;
+  }, [resumeStartTime, tmdbId, season, episode]);
 
   const navigateToEpisode = useCallback(
     (target, options = {}) => {
@@ -171,8 +255,11 @@ export default function WatchPage() {
 
   const handleNextEpisode = useCallback((options) => {
     setCountdownRemaining(null);
+    if (nextHistoryEntry) {
+      addToHistory(nextHistoryEntry);
+    }
     navigateToEpisode(nextEpisodeTarget, options);
-  }, [navigateToEpisode, nextEpisodeTarget]);
+  }, [addToHistory, navigateToEpisode, nextEpisodeTarget, nextHistoryEntry]);
 
   const handleAutoNextToggle = useCallback(() => {
     setAutoNextEnabled((currentValue) => {
@@ -200,18 +287,72 @@ export default function WatchPage() {
         }
       }
 
+      if (!historyEntry) {
+        return;
+      }
+
+      const progressSnapshot = createProgressSnapshot(playerEvent);
+
+      const persistProgress = (force = false) => {
+        if (progressSnapshot.progressSeconds < MIN_PROGRESS_SECONDS && progressSnapshot.progressPercent < 1) {
+          return;
+        }
+
+        if (!force) {
+          const checkpoint = Math.floor(progressSnapshot.progressSeconds / PROGRESS_CHECKPOINT_SECONDS);
+          if (checkpoint <= lastSavedCheckpointRef.current) {
+            return;
+          }
+          lastSavedCheckpointRef.current = checkpoint;
+        } else if (Math.abs(progressSnapshot.progressSeconds - lastSavedProgressRef.current) < 3) {
+          return;
+        }
+
+        lastSavedProgressRef.current = progressSnapshot.progressSeconds;
+        updateProgress(historyEntry, progressSnapshot);
+      };
+
+      if (playerEvent.event === 'play') {
+        setCountdownRemaining(null);
+        addToHistory(historyEntry);
+        return;
+      }
+
       if (playerEvent.event === 'ended') {
+        lastSavedCheckpointRef.current = -1;
+        lastSavedProgressRef.current = 0;
+
+        if (isMovie || !nextHistoryEntry) {
+          removeFromHistory(historyEntry);
+          setCountdownRemaining(null);
+          return;
+        }
+
+        addToHistory(nextHistoryEntry);
         if (autoNextEnabled && nextEpisodeTarget) {
           setCountdownRemaining(AUTO_NEXT_DELAY_SECONDS);
+        } else {
+          setCountdownRemaining(null);
         }
         return;
       }
 
-      if (playerEvent.event === 'play' || playerEvent.event === 'seeked') {
+      if (playerEvent.event === 'seeked') {
         setCountdownRemaining(null);
+        persistProgress(true);
+        return;
+      }
+
+      if (playerEvent.event === 'pause') {
+        persistProgress(true);
+        return;
+      }
+
+      if (playerEvent.event === 'timeupdate') {
+        persistProgress(false);
       }
     },
-    [autoNextEnabled, episode, isMovie, nextEpisodeTarget, season, tmdbId]
+    [addToHistory, autoNextEnabled, episode, historyEntry, isMovie, nextEpisodeTarget, nextHistoryEntry, removeFromHistory, season, tmdbId, updateProgress]
   );
 
   useEffect(() => {
@@ -285,6 +426,7 @@ export default function WatchPage() {
         mediaType={isMovie ? 'movie' : 'tv'}
         season={season}
         episode={episode}
+        startTime={playerResumeState.startTime}
         onPlayerEvent={handlePlayerEvent}
       >
         {!isMovie && countdownRemaining != null && nextEpisodeTarget && (

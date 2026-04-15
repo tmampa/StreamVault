@@ -802,6 +802,22 @@ input {
 .content-card__rating--mid { color: var(--rating-mid); }
 .content-card__rating--low { color: var(--rating-low); }
 
+.content-card__progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.18);
+  z-index: 2;
+}
+
+.content-card__progress-bar {
+  display: block;
+  height: 100%;
+  background: var(--accent-primary);
+}
+
 .content-card__info {
   padding: 8px 2px 0;
 }
@@ -818,6 +834,20 @@ input {
 .content-card__year {
   font-size: 0.72rem;
   color: var(--text-muted);
+}
+
+.content-card__progress-label,
+.content-card__progress-text {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+
+.content-card__progress-label {
+  margin-top: 3px;
+}
+
+.content-card__progress-text {
+  margin-top: 2px;
 }
 
 /* =================== CARD HOVER INFO PANEL =================== */

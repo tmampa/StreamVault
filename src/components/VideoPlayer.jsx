@@ -1,19 +1,21 @@
 import { memo, useEffect, useMemo, useRef } from 'react';
 import { getMovieEmbedUrl, getTvEmbedUrl, parsePlayerEventMessage, PLAYER_COLOR } from '../api/vidking';
 
-const VideoPlayer = memo(function VideoPlayer({ tmdbId, mediaType, season, episode, onPlayerEvent, children }) {
+const VideoPlayer = memo(function VideoPlayer({ tmdbId, mediaType, season, episode, startTime = 0, onPlayerEvent, children }) {
   const iframeRef = useRef(null);
+
   const embedUrl = useMemo(
     () =>
       mediaType === 'movie'
-        ? getMovieEmbedUrl(tmdbId, { color: PLAYER_COLOR, autoplay: true })
+        ? getMovieEmbedUrl(tmdbId, { color: PLAYER_COLOR, autoplay: true, progress: startTime })
         : getTvEmbedUrl(tmdbId, season, episode, {
             color: PLAYER_COLOR,
             autoplay: true,
+            progress: startTime,
             episodeSelector: true,
             nextEpisodeBtn: true,
           }),
-    [tmdbId, mediaType, season, episode]
+    [tmdbId, mediaType, season, episode, startTime]
   );
 
   useEffect(() => {
