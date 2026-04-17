@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import ContentCard from './ContentCard';
 import PreviewModal from './PreviewModal';
@@ -24,9 +25,9 @@ export default function ContentRow({ title, items, seeAllLink, onRemove }) {
       <div className="content-section__header">
         <h2 className="content-section__title">{title}</h2>
         {seeAllLink && (
-          <a href={seeAllLink} className="content-section__see-all">
+          <Link to={seeAllLink} className="content-section__see-all">
             See All <ArrowRight size={16} />
-          </a>
+          </Link>
         )}
       </div>
       <div className="content-row__scroll-wrapper">

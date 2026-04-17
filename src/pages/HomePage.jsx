@@ -4,8 +4,10 @@ import HeroSection from '../components/HeroSection';
 import ContentRow from '../components/ContentRow';
 import SkeletonCard from '../components/SkeletonCard';
 import { useContinueWatching } from '../context/ContinueWatchingContext';
-import { AlertTriangle, Play, Flame, Clapperboard, Tv, Star, Trophy } from 'lucide-react';
-import { getTrending, getPopularMovies, getPopularTv, getTopRatedMovies, getTopRatedTv } from '../api/tmdb';
+import { AlertTriangle, Play, Flame, Clapperboard, Tv, Star, Trophy, CalendarDays, Sparkles, Globe2, Zap } from 'lucide-react';
+import { discoverMovies, discoverTv, getTrending, getPopularMovies, getPopularTv, getTopRatedMovies, getTopRatedTv } from '../api/tmdb';
+import { buildDiscoverParams } from '../discoveryFilters';
+import { buildHeroShowcase, HOME_CURATIONS } from '../homeCurations';
 
 function SkeletonRow() {
   return (
@@ -28,9 +30,18 @@ export default function HomePage() {
   const [popularTv, setPopularTv] = useState([]);
   const [topRatedMovies, setTopRatedMovies] = useState([]);
   const [topRatedTv, setTopRatedTv] = useState([]);
+  const [curatedRows, setCuratedRows] = useState([]);
+  const [heroItems, setHeroItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { items: continueWatchingItems, removeFromHistory } = useContinueWatching();
+
+  const rowIcons = {
+    'fresh-this-year': CalendarDays,
+    'critics-choice-tv': Sparkles,
+    'k-drama-spotlight': Globe2,
+    'action-night': Zap,
+  };
 
   useEffect(() => {
     async function loadData() {
@@ -42,11 +53,41 @@ export default function HomePage() {
           getTopRatedMovies(),
           getTopRatedTv(),
         ]);
-        setTrending(trendRes.results || []);
+
+        const curatedResults = await Promise.allSettled(
+          HOME_CURATIONS.map(async (row) => {
+            const discover = row.mediaType === 'tv' ? discoverTv : discoverMovies;
+            const data = await discover({
+              ...buildDiscoverParams({
+                mediaType: row.mediaType,
+                genre: row.filters.genre,
+                minRating: row.filters.minRating,
+                year: row.filters.year,
+                language: row.filters.language,
+                sort: row.filters.sort,
+              }),
+              ...row.extraParams,
+            });
+
+            return {
+              ...row,
+              items: (data.results || []).map((item) => ({ ...item, media_type: row.mediaType })),
+            };
+          }),
+        );
+
+        const trendingItems = trendRes.results || [];
+        const successfulCuratedRows = curatedResults
+          .filter((result) => result.status === 'fulfilled' && result.value.items.length > 0)
+          .map((result) => result.value);
+
+        setTrending(trendingItems);
         setPopularMovies(popMovRes.results || []);
         setPopularTv(popTvRes.results || []);
         setTopRatedMovies(topMovRes.results || []);
         setTopRatedTv(topTvRes.results || []);
+        setCuratedRows(successfulCuratedRows);
+        setHeroItems(buildHeroShowcase(trendingItems, successfulCuratedRows));
       } catch (err) {
         console.error('Failed to load homepage data:', err);
         setError(err instanceof Error ? err.message : 'Failed to load content. Please try again later.');
@@ -94,7 +135,7 @@ export default function HomePage() {
         <title>TM — Home</title>
         <meta name="description" content="Trending movies and TV, popular picks, and your continue watching list." />
       </Helmet>
-      <HeroSection items={trending} />
+      <HeroSection items={heroItems.length > 0 ? heroItems : trending} />
       {continueWatchingItems.length > 0 && (
         <ContentRow
           title={<><Play size={18} fill="currentColor" /> Continue Watching</>}
@@ -109,6 +150,18 @@ export default function HomePage() {
         />
       )}
       <ContentRow title={<><Flame size={18} /> Trending Today</>} items={trending} />
+      {curatedRows.map((row) => {
+        const RowIcon = rowIcons[row.key] || Sparkles;
+
+        return (
+          <ContentRow
+            key={row.key}
+            title={<><RowIcon size={18} /> {row.label}</>}
+            items={row.items}
+            seeAllLink={row.seeAllLink}
+          />
+        );
+      })}
       <ContentRow title={<><Clapperboard size={18} /> Popular Movies</>} items={popularMovies} />
       <ContentRow title={<><Tv size={18} /> Popular TV Shows</>} items={popularTv} />
       <ContentRow title={<><Star size={18} /> Top Rated Movies</>} items={topRatedMovies} />
