@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { buildDiscoveryLink, buildHeroShowcase, HOME_CURATIONS } from './homeCurations';
 
+const CURRENT_YEAR = String(new Date().getFullYear());
+
 describe('homeCurations helpers', () => {
   it('builds search links while omitting default params', () => {
     expect(buildDiscoveryLink()).toBe('/search');
@@ -10,10 +12,10 @@ describe('homeCurations helpers', () => {
         genre: '28',
         sort: 'release.desc',
         minRating: '7',
-        year: '2026',
+        year: CURRENT_YEAR,
         language: 'en',
       }),
-    ).toBe('/search?type=movie&genre=28&sort=release.desc&rating=7&year=2026&language=en');
+    ).toBe(`/search?type=movie&genre=28&sort=release.desc&rating=7&year=${CURRENT_YEAR}&language=en`);
   });
 
   it('defines curated homepage shelves with links', () => {
@@ -57,7 +59,7 @@ describe('homeCurations helpers', () => {
         key: 'fresh-this-year',
         label: 'Fresh This Year',
         heroContext: 'Fresh context',
-        seeAllLink: '/search?year=2026',
+        seeAllLink: `/search?year=${CURRENT_YEAR}`,
         items: [
           {
             id: 2,
@@ -84,7 +86,7 @@ describe('homeCurations helpers', () => {
     expect(showcase[2]).toMatchObject({
       heroBadge: 'Fresh This Year',
       heroContext: 'Fresh context',
-      heroSeeAllLink: '/search?year=2026',
+      heroSeeAllLink: `/search?year=${CURRENT_YEAR}`,
     });
   });
 });

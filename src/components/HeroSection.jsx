@@ -11,6 +11,8 @@ export default function HeroSection({ items }) {
   const [trailerKeys, setTrailerKeys] = useState({});
   const [loadedTrailerKey, setLoadedTrailerKey] = useState('');
   const iframeRef = useRef(null);
+  const loadTimerRef = useRef(null);
+  const currentTrailerKeyRef = useRef(null);
   const navigate = useNavigate();
   const featured = items?.slice(0, 5) || [];
   const safeCurrent = Math.min(current, Math.max(featured.length - 1, 0));
@@ -57,6 +59,13 @@ export default function HeroSection({ items }) {
     return () => { cancelled = true; };
   }, [items]);
 
+  useEffect(() => {
+    currentTrailerKeyRef.current = trailerKey;
+    clearTimeout(loadTimerRef.current);
+    setLoadedTrailerKey('');
+    return () => clearTimeout(loadTimerRef.current);
+  }, [trailerKey]);
+
   if (!item) return null;
 
   const title = item.title || item.name;
@@ -101,7 +110,15 @@ export default function HeroSection({ items }) {
             allow="autoplay; fullscreen; encrypted-media"
             allowFullScreen
             title="Trailer"
-            onLoad={() => setTimeout(() => setLoadedTrailerKey(trailerKey), 1000)}
+            onLoad={() => {
+              const keyAtLoad = trailerKey;
+              clearTimeout(loadTimerRef.current);
+              loadTimerRef.current = setTimeout(() => {
+                if (currentTrailerKeyRef.current === keyAtLoad) {
+                  setLoadedTrailerKey(keyAtLoad);
+                }
+              }, 1000);
+            }}
           />
         </div>
       )}
