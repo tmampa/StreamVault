@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { applyContentFilters, buildDiscoverParams, DEFAULT_DISCOVERY_SORT } from './discoveryFilters';
+import {
+  applyContentFilters,
+  buildDiscoverParams,
+  DEFAULT_DISCOVERY_SORT,
+  DISCOVER_SORT_OPTIONS,
+  mergeSortedContent,
+  normalizeSortValue,
+  sortContentItems,
+} from './discoveryFilters';
 
 describe('discoveryFilters helpers', () => {
   it('builds discover params with media-aware year and sort fields', () => {
@@ -33,6 +41,13 @@ describe('discoveryFilters helpers', () => {
       sort_by: 'first_air_date.asc',
       first_air_date_year: '2023',
     });
+
+    expect(buildDiscoverParams({ mediaType: 'movie', sort: 'title.asc' }).sort_by).toBe(DEFAULT_DISCOVERY_SORT);
+  });
+
+  it('normalizes unsupported discover sorts', () => {
+    expect(DISCOVER_SORT_OPTIONS.map((option) => option.value)).not.toContain('title.asc');
+    expect(normalizeSortValue('title.asc', DISCOVER_SORT_OPTIONS)).toBe(DEFAULT_DISCOVERY_SORT);
   });
 
   it('filters by media type, genre, rating, year, and language', () => {
@@ -109,5 +124,18 @@ describe('discoveryFilters helpers', () => {
     expect(applyContentFilters(items, { sort: 'title.asc' }).map((item) => item.id)).toEqual([2, 1]);
     expect(applyContentFilters(items, { sort: 'rating.desc' }).map((item) => item.id)).toEqual([2, 1]);
     expect(applyContentFilters(items, { sort: 'release.asc' }).map((item) => item.id)).toEqual([1, 2]);
+  });
+
+  it('merges newly sorted batches without re-sorting the full list', () => {
+    const firstBatch = sortContentItems([
+      { id: 1, popularity: 95 },
+      { id: 3, popularity: 70 },
+    ]);
+    const secondBatch = sortContentItems([
+      { id: 2, popularity: 82 },
+      { id: 4, popularity: 50 },
+    ]);
+
+    expect(mergeSortedContent(firstBatch, secondBatch).map((item) => item.id)).toEqual([1, 2, 3, 4]);
   });
 });

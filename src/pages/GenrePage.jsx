@@ -6,12 +6,13 @@ import ContentCard from '../components/ContentCard';
 import SkeletonCard from '../components/SkeletonCard';
 import { discoverMovies, discoverTv, getMovieGenres, getTvGenres } from '../api/tmdb';
 import {
-  applyContentFilters,
   buildDiscoverParams,
   DEFAULT_DISCOVERY_SORT,
+  DISCOVER_SORT_OPTIONS,
+  filterContentItems,
   LANGUAGE_OPTIONS,
+  normalizeSortValue,
   RATING_OPTIONS,
-  SORT_OPTIONS,
   YEAR_OPTIONS,
 } from '../discoveryFilters';
 
@@ -21,7 +22,8 @@ export default function GenrePage() {
   const { id } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
   const type = searchParams.get('type') || DEFAULT_TYPE;
-  const selectedSort = searchParams.get('sort') || DEFAULT_DISCOVERY_SORT;
+  const requestedSort = searchParams.get('sort') || DEFAULT_DISCOVERY_SORT;
+  const selectedSort = normalizeSortValue(requestedSort, DISCOVER_SORT_OPTIONS);
   const minRating = searchParams.get('rating') || '';
   const selectedYear = searchParams.get('year') || '';
   const selectedLanguage = searchParams.get('language') || '';
@@ -58,6 +60,12 @@ export default function GenrePage() {
   }, [searchParams, setSearchParams]);
 
   useEffect(() => {
+    if (requestedSort !== selectedSort) {
+      updateGenreParams({ sort: selectedSort }, { replace: true });
+    }
+  }, [requestedSort, selectedSort, updateGenreParams]);
+
+  useEffect(() => {
     async function loadGenreName() {
       try {
         const data = type === 'tv' ? await getTvGenres() : await getMovieGenres();
@@ -82,6 +90,13 @@ export default function GenrePage() {
       setLoading(true);
       setError(null);
       try {
+        const filterConfig = {
+          type,
+          genre: id,
+          minRating,
+          year: selectedYear,
+          language: selectedLanguage,
+        };
         const discover = type === 'tv' ? discoverTv : discoverMovies;
         const data = await discover(buildDiscoverParams({
           page,
@@ -97,15 +112,12 @@ export default function GenrePage() {
           return;
         }
 
-        const incomingItems = (data.results || []).map((item) => ({ ...item, media_type: type }));
-        setResults((prev) => applyContentFilters(page === 1 ? incomingItems : [...prev, ...incomingItems], {
-          type,
-          genre: id,
-          minRating,
-          year: selectedYear,
-          language: selectedLanguage,
-          sort: selectedSort,
-        }));
+        const filteredIncomingItems = filterContentItems(
+          (data.results || []).map((item) => ({ ...item, media_type: type })),
+          filterConfig,
+        );
+
+        setResults((prev) => (page === 1 ? filteredIncomingItems : [...prev, ...filteredIncomingItems]));
         setTotalPages(data.total_pages || 1);
       } catch (err) {
         console.error('Failed to load genre results:', err);
@@ -175,19 +187,23 @@ export default function GenrePage() {
           </button>
 
           <div className="search-page__filter-selects">
+            <label className="sr-only" htmlFor="genre-filter-sort">Sort</label>
             <select
+              id="genre-filter-sort"
               className="genre-select search-page__filter-select"
               value={selectedSort}
               onChange={(e) => updateGenreParams({ sort: e.target.value }, { replace: true })}
             >
-              {SORT_OPTIONS.map((option) => (
+              {DISCOVER_SORT_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
               ))}
             </select>
 
+            <label className="sr-only" htmlFor="genre-filter-rating">Minimum rating</label>
             <select
+              id="genre-filter-rating"
               className="genre-select search-page__filter-select"
               value={minRating}
               onChange={(e) => updateGenreParams({ rating: e.target.value }, { replace: true })}
@@ -199,7 +215,9 @@ export default function GenrePage() {
               ))}
             </select>
 
+            <label className="sr-only" htmlFor="genre-filter-year">Release year</label>
             <select
+              id="genre-filter-year"
               className="genre-select search-page__filter-select"
               value={selectedYear}
               onChange={(e) => updateGenreParams({ year: e.target.value }, { replace: true })}
@@ -212,7 +230,9 @@ export default function GenrePage() {
               ))}
             </select>
 
+            <label className="sr-only" htmlFor="genre-filter-language">Original language</label>
             <select
+              id="genre-filter-language"
               className="genre-select search-page__filter-select"
               value={selectedLanguage}
               onChange={(e) => updateGenreParams({ language: e.target.value }, { replace: true })}

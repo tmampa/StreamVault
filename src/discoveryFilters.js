@@ -8,6 +8,8 @@ export const SORT_OPTIONS = [
   { value: 'title.asc', label: 'A to Z' },
 ];
 
+export const DISCOVER_SORT_OPTIONS = SORT_OPTIONS.filter((option) => option.value !== 'title.asc');
+
 export const RATING_OPTIONS = [
   { value: '', label: 'Any Rating' },
   { value: '5', label: '5+ Rating' },
@@ -66,6 +68,10 @@ function getSortComparator(sort) {
   }
 }
 
+export function normalizeSortValue(sort, options = SORT_OPTIONS) {
+  return options.some((option) => option.value === sort) ? sort : DEFAULT_DISCOVERY_SORT;
+}
+
 function getDiscoverSort(sort, mediaType) {
   switch (sort) {
     case 'rating.desc':
@@ -104,6 +110,60 @@ export function buildDiscoverParams({
   return params;
 }
 
+export function filterContentItems(items, {
+  type = 'all',
+  genre = '',
+  minRating = '',
+  year = '',
+  language = '',
+} = {}) {
+  const normalizedGenre = genre ? Number(genre) : null;
+  const normalizedRating = minRating ? Number(minRating) : null;
+
+  return items.filter((item) => {
+    const mediaType = normalizeMediaType(item, type === 'all' ? 'movie' : type);
+    if (item.media_type === 'person') return false;
+    if (!item.poster_path && !item.backdrop_path) return false;
+    if (type !== 'all' && mediaType !== type) return false;
+    if (normalizedGenre && !(item.genre_ids || []).includes(normalizedGenre)) return false;
+    if (normalizedRating && (item.vote_average || 0) < normalizedRating) return false;
+    if (year && getYear(item) !== year) return false;
+    if (language && item.original_language !== language) return false;
+    return true;
+  });
+}
+
+export function sortContentItems(items, sort = DEFAULT_DISCOVERY_SORT) {
+  return [...items].sort(getSortComparator(sort));
+}
+
+export function mergeSortedContent(existingItems, incomingItems, sort = DEFAULT_DISCOVERY_SORT) {
+  if (existingItems.length === 0) {
+    return [...incomingItems];
+  }
+
+  if (incomingItems.length === 0) {
+    return [...existingItems];
+  }
+
+  const comparator = getSortComparator(sort);
+  const merged = [];
+  let existingIndex = 0;
+  let incomingIndex = 0;
+
+  while (existingIndex < existingItems.length && incomingIndex < incomingItems.length) {
+    if (comparator(existingItems[existingIndex], incomingItems[incomingIndex]) <= 0) {
+      merged.push(existingItems[existingIndex]);
+      existingIndex += 1;
+    } else {
+      merged.push(incomingItems[incomingIndex]);
+      incomingIndex += 1;
+    }
+  }
+
+  return merged.concat(existingItems.slice(existingIndex), incomingItems.slice(incomingIndex));
+}
+
 export function applyContentFilters(items, {
   type = 'all',
   genre = '',
@@ -112,20 +172,5 @@ export function applyContentFilters(items, {
   language = '',
   sort = DEFAULT_DISCOVERY_SORT,
 } = {}) {
-  const normalizedGenre = genre ? Number(genre) : null;
-  const normalizedRating = minRating ? Number(minRating) : null;
-
-  return [...items]
-    .filter((item) => {
-      const mediaType = normalizeMediaType(item, type === 'all' ? 'movie' : type);
-      if (item.media_type === 'person') return false;
-      if (!item.poster_path && !item.backdrop_path) return false;
-      if (type !== 'all' && mediaType !== type) return false;
-      if (normalizedGenre && !(item.genre_ids || []).includes(normalizedGenre)) return false;
-      if (normalizedRating && (item.vote_average || 0) < normalizedRating) return false;
-      if (year && getYear(item) !== year) return false;
-      if (language && item.original_language !== language) return false;
-      return true;
-    })
-    .sort(getSortComparator(sort));
+  return sortContentItems(filterContentItems(items, { type, genre, minRating, year, language }), sort);
 }
