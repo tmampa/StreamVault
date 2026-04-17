@@ -1,34 +1,86 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import { AlertTriangle, Search, X, TrendingUp, Clock } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
+import { AlertTriangle, Search, X, TrendingUp, Clock, SlidersHorizontal } from 'lucide-react';
 import ContentCard from '../components/ContentCard';
 import PreviewModal from '../components/PreviewModal';
 import SkeletonCard from '../components/SkeletonCard';
 import { searchMulti, discoverMovies, discoverTv, getMovieGenres, getTvGenres, getTrending } from '../api/tmdb';
+import {
+  buildDiscoverParams,
+  DEFAULT_DISCOVERY_SORT,
+  DISCOVER_SORT_OPTIONS,
+  filterContentItems,
+  LANGUAGE_OPTIONS,
+  mergeSortedContent,
+  normalizeSortValue,
+  RATING_OPTIONS,
+  SORT_OPTIONS,
+  sortContentItems,
+  YEAR_OPTIONS,
+} from '../discoveryFilters';
 import { getRecentSearches, saveRecentSearch, clearRecentSearches } from '../recentSearches';
 
+const DEFAULT_TYPE = 'all';
+
 export default function SearchPage() {
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
-  const type = searchParams.get('type') || 'all';
+  const type = searchParams.get('type') || DEFAULT_TYPE;
+  const selectedGenre = searchParams.get('genre') || '';
+  const requestedSort = searchParams.get('sort') || DEFAULT_DISCOVERY_SORT;
+  const minRating = searchParams.get('rating') || '';
+  const selectedYear = searchParams.get('year') || '';
+  const selectedLanguage = searchParams.get('language') || '';
+  const sortOptions = query ? SORT_OPTIONS : DISCOVER_SORT_OPTIONS;
+  const selectedSort = normalizeSortValue(requestedSort, sortOptions);
   const [results, setResults] = useState([]);
   const [trending, setTrending] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [filter, setFilter] = useState(type);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [error, setError] = useState(null);
   const [genres, setGenres] = useState([]);
-  const [selectedGenre, setSelectedGenre] = useState('');
   const [modalItem, setModalItem] = useState(null);
   const [localQuery, setLocalQuery] = useState(query);
   const [recentSearches, setRecentSearches] = useState(getRecentSearches);
   const loaderRef = useRef(null);
   const inputRef = useRef(null);
   const debounceRef = useRef(null);
+  const hasActiveFilters =
+    type !== DEFAULT_TYPE ||
+    Boolean(selectedGenre) ||
+    Boolean(minRating) ||
+    Boolean(selectedYear) ||
+    Boolean(selectedLanguage) ||
+    selectedSort !== DEFAULT_DISCOVERY_SORT;
+
+  const updateSearchParams = useCallback((updates, options = {}) => {
+    const nextParams = new URLSearchParams(searchParams);
+
+    Object.entries(updates).forEach(([key, value]) => {
+      const nextValue = value == null ? '' : String(value);
+
+      if (
+        nextValue === '' ||
+        (key === 'type' && nextValue === DEFAULT_TYPE) ||
+        (key === 'sort' && nextValue === DEFAULT_DISCOVERY_SORT)
+      ) {
+        nextParams.delete(key);
+      } else {
+        nextParams.set(key, nextValue);
+      }
+    });
+
+    setSearchParams(nextParams, { replace: options.replace ?? true });
+  }, [searchParams, setSearchParams]);
+
+  useEffect(() => {
+    if (requestedSort !== selectedSort) {
+      updateSearchParams({ sort: selectedSort }, { replace: true });
+    }
+  }, [requestedSort, selectedSort, updateSearchParams]);
 
   // Sync local input with URL query
   useEffect(() => {
@@ -55,7 +107,7 @@ export default function SearchPage() {
 
   // Load trending content for empty-query state
   useEffect(() => {
-    if (query) return;
+    if (query || hasActiveFilters) return;
     async function loadTrending() {
       try {
         const data = await getTrending('all', 'week');
@@ -65,51 +117,141 @@ export default function SearchPage() {
       }
     }
     loadTrending();
-  }, [query]);
+  }, [query, hasActiveFilters]);
 
-  // Reset on filter/query/genre change
+  // Reset on query/filter changes
   useEffect(() => {
     setPage(1);
     setResults([]);
-  }, [query, filter, selectedGenre]);
+  }, [query, type, selectedGenre, selectedSort, minRating, selectedYear, selectedLanguage]);
 
   useEffect(() => {
+    if (!query && !hasActiveFilters) {
+      setLoading(false);
+      setLoadingMore(false);
+      setError(null);
+      setResults([]);
+      setTotalPages(1);
+      return undefined;
+    }
+
+    let cancelled = false;
+
     async function loadResults() {
       if (page === 1) setLoading(true);
       else setLoadingMore(true);
       setError(null);
+
       try {
-        let data;
-        const genreParam = selectedGenre ? { with_genres: selectedGenre } : {};
+        const filterConfig = {
+          type,
+          genre: selectedGenre,
+          minRating,
+          year: selectedYear,
+          language: selectedLanguage,
+          sort: selectedSort,
+        };
+
+        let filteredIncomingItems = [];
+        let nextTotalPages = 1;
+        let canAppendServerSortedResults = false;
+
         if (query) {
-          data = await searchMulti(query, page);
-        } else if (filter === 'movie') {
-          data = await discoverMovies({ page, ...genreParam });
-        } else if (filter === 'tv') {
-          data = await discoverTv({ page, ...genreParam });
+          const data = await searchMulti(query, page);
+          filteredIncomingItems = sortContentItems(
+            filterContentItems(data.results || [], filterConfig),
+            selectedSort,
+          );
+          nextTotalPages = data.total_pages || 1;
+        } else if (type === DEFAULT_TYPE) {
+          const [movieData, tvData] = await Promise.all([
+            discoverMovies(buildDiscoverParams({
+              page,
+              mediaType: 'movie',
+              genre: selectedGenre,
+              minRating,
+              year: selectedYear,
+              language: selectedLanguage,
+              sort: selectedSort,
+            })),
+            discoverTv(buildDiscoverParams({
+              page,
+              mediaType: 'tv',
+              genre: selectedGenre,
+              minRating,
+              year: selectedYear,
+              language: selectedLanguage,
+              sort: selectedSort,
+            })),
+          ]);
+
+          filteredIncomingItems = sortContentItems(
+            filterContentItems(
+              [
+                ...(movieData.results || []).map((item) => ({ ...item, media_type: 'movie' })),
+                ...(tvData.results || []).map((item) => ({ ...item, media_type: 'tv' })),
+              ],
+              filterConfig,
+            ),
+            selectedSort,
+          );
+          nextTotalPages = Math.max(movieData.total_pages || 1, tvData.total_pages || 1);
         } else {
-          data = await discoverMovies({ page, ...genreParam });
+          const discover = type === 'tv' ? discoverTv : discoverMovies;
+          const data = await discover(buildDiscoverParams({
+            page,
+            mediaType: type,
+            genre: selectedGenre,
+            minRating,
+            year: selectedYear,
+            language: selectedLanguage,
+            sort: selectedSort,
+          }));
+
+          filteredIncomingItems = filterContentItems(
+            (data.results || []).map((item) => ({ ...item, media_type: type })),
+            filterConfig,
+          );
+          nextTotalPages = data.total_pages || 1;
+          canAppendServerSortedResults = true;
         }
-        let items = data.results || [];
-        if (query && filter !== 'all') {
-          items = items.filter((item) => item.media_type === filter);
+
+        if (cancelled) {
+          return;
         }
-        items = items.filter(
-          (item) => item.media_type !== 'person' && (item.poster_path || item.backdrop_path)
-        );
-        setResults((prev) => (page === 1 ? items : [...prev, ...items]));
-        setTotalPages(data.total_pages || 1);
+
+        setResults((prev) => {
+          if (page === 1) {
+            return filteredIncomingItems;
+          }
+
+          if (canAppendServerSortedResults) {
+            return [...prev, ...filteredIncomingItems];
+          }
+
+          return mergeSortedContent(prev, filteredIncomingItems, selectedSort);
+        });
+        setTotalPages(nextTotalPages);
       } catch (err) {
         console.error('Search error:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load results. Please try again.');
-        if (page === 1) setResults([]);
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : 'Failed to load results. Please try again.');
+          if (page === 1) setResults([]);
+        }
       } finally {
-        setLoading(false);
-        setLoadingMore(false);
+        if (!cancelled) {
+          setLoading(false);
+          setLoadingMore(false);
+        }
       }
     }
+
     loadResults();
-  }, [query, filter, page, selectedGenre]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [query, type, page, selectedGenre, selectedSort, minRating, selectedYear, selectedLanguage, hasActiveFilters]);
 
   // Infinite scroll
   useEffect(() => {
@@ -134,15 +276,15 @@ export default function SearchPage() {
       clearTimeout(debounceRef.current);
       if (val.trim()) {
         debounceRef.current = setTimeout(() => {
-          navigate(`/search?q=${encodeURIComponent(val.trim())}`, { replace: true });
+          updateSearchParams({ q: val.trim() }, { replace: true });
         }, 400);
       } else {
         debounceRef.current = setTimeout(() => {
-          navigate('/search', { replace: true });
+          updateSearchParams({ q: null }, { replace: true });
         }, 400);
       }
     },
-    [navigate]
+    [updateSearchParams]
   );
 
   const handleSubmit = (e) => {
@@ -151,14 +293,14 @@ export default function SearchPage() {
     if (localQuery.trim()) {
       saveRecentSearch(localQuery.trim());
       setRecentSearches(getRecentSearches());
-      navigate(`/search?q=${encodeURIComponent(localQuery.trim())}`);
+      updateSearchParams({ q: localQuery.trim() }, { replace: false });
     }
   };
 
   const handleClear = () => {
     setLocalQuery('');
     clearTimeout(debounceRef.current);
-    navigate('/search', { replace: true });
+    updateSearchParams({ q: null }, { replace: true });
     inputRef.current?.focus();
   };
 
@@ -166,7 +308,7 @@ export default function SearchPage() {
     setLocalQuery(q);
     saveRecentSearch(q);
     setRecentSearches(getRecentSearches());
-    navigate(`/search?q=${encodeURIComponent(q)}`);
+    updateSearchParams({ q }, { replace: false });
   };
 
   const handleClearRecent = () => {
@@ -174,11 +316,25 @@ export default function SearchPage() {
     setRecentSearches([]);
   };
 
+  const handleResetFilters = () => {
+    updateSearchParams(
+      {
+        type: DEFAULT_TYPE,
+        genre: '',
+        sort: DEFAULT_DISCOVERY_SORT,
+        rating: '',
+        year: '',
+        language: '',
+      },
+      { replace: false },
+    );
+  };
+
   const pageTitle = query
     ? `Results for "${query}"`
-    : filter === 'movie'
+    : type === 'movie'
     ? 'Popular Movies'
-    : filter === 'tv'
+    : type === 'tv'
     ? 'Popular TV Shows'
     : 'Discover';
 
@@ -232,8 +388,110 @@ export default function SearchPage() {
         </div>
       )}
 
-      {/* Trending when no query and no type filter */}
-      {!query && filter === 'all' && !selectedGenre && trending.length > 0 && !loading && (
+      <div className="search-page__filters-panel">
+        <div className="search-page__filters-meta">
+          <span className="search-page__filters-label">
+            <SlidersHorizontal size={16} /> Refine Discovery
+          </span>
+          {hasActiveFilters && (
+            <button type="button" className="search-page__filters-reset" onClick={handleResetFilters}>
+              Reset filters
+            </button>
+          )}
+        </div>
+
+        <div className="search-page__filters">
+          {['all', 'movie', 'tv'].map((nextType) => (
+            <button
+              key={nextType}
+              className={`filter-btn ${type === nextType ? 'active' : ''}`}
+              onClick={() => updateSearchParams({ type: nextType }, { replace: true })}
+            >
+              {nextType === 'all' ? 'All' : nextType === 'movie' ? 'Movies' : 'TV Shows'}
+            </button>
+          ))}
+          <div className="search-page__filter-selects">
+            <label className="sr-only" htmlFor="search-filter-genre">Genre</label>
+            <select
+              id="search-filter-genre"
+              className="genre-select search-page__filter-select"
+              value={selectedGenre}
+              onChange={(e) => updateSearchParams({ genre: e.target.value }, { replace: true })}
+            >
+              <option value="">All Genres</option>
+              {genres.map((genre) => (
+                <option key={genre.id} value={genre.id}>
+                  {genre.name}
+                </option>
+              ))}
+            </select>
+
+            <label className="sr-only" htmlFor="search-filter-sort">Sort</label>
+            <select
+              id="search-filter-sort"
+              className="genre-select search-page__filter-select"
+              value={selectedSort}
+              onChange={(e) => updateSearchParams({ sort: e.target.value }, { replace: true })}
+            >
+              {sortOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+
+            <label className="sr-only" htmlFor="search-filter-rating">Minimum rating</label>
+            <select
+              id="search-filter-rating"
+              className="genre-select search-page__filter-select"
+              value={minRating}
+              onChange={(e) => updateSearchParams({ rating: e.target.value }, { replace: true })}
+            >
+              {RATING_OPTIONS.map((option) => (
+                <option key={option.value || 'all'} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+
+            <label className="sr-only" htmlFor="search-filter-year">Release year</label>
+            <select
+              id="search-filter-year"
+              className="genre-select search-page__filter-select"
+              value={selectedYear}
+              onChange={(e) => updateSearchParams({ year: e.target.value }, { replace: true })}
+            >
+              <option value="">All Years</option>
+              {YEAR_OPTIONS.map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </select>
+
+            <label className="sr-only" htmlFor="search-filter-language">Original language</label>
+            <select
+              id="search-filter-language"
+              className="genre-select search-page__filter-select"
+              value={selectedLanguage}
+              onChange={(e) => updateSearchParams({ language: e.target.value }, { replace: true })}
+            >
+              {LANGUAGE_OPTIONS.map((option) => (
+                <option key={option.value || 'all'} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <p className="search-page__filter-hint">
+          Search results are refined client-side. Discovery results use TMDB filters directly when available.
+        </p>
+      </div>
+
+      {/* Trending when no query and no active filters */}
+      {!query && !hasActiveFilters && trending.length > 0 && !loading && (
         <div className="search-page__trending">
           <h2 className="search-page__trending-title">
             <TrendingUp size={20} /> Trending This Week
@@ -248,44 +506,14 @@ export default function SearchPage() {
         </div>
       )}
 
-      {/* Filters + results header */}
-      {(query || filter !== 'all' || selectedGenre) && (
+      {(query || hasActiveFilters) && (
         <>
           <div className="search-page__header">
             <h1 className="search-page__title">{pageTitle}</h1>
-            <p className="search-page__count">{results.length} results</p>
-          </div>
-
-          <div className="search-page__filters">
-            {['all', 'movie', 'tv'].map((f) => (
-              <button
-                key={f}
-                className={`filter-btn ${filter === f ? 'active' : ''}`}
-                onClick={() => setFilter(f)}
-              >
-                {f === 'all' ? 'All' : f === 'movie' ? 'Movies' : 'TV Shows'}
-              </button>
-            ))}
-            {!query && (
-              <select
-                className="genre-select"
-                value={selectedGenre}
-                onChange={(e) => setSelectedGenre(e.target.value)}
-              >
-                <option value="">All Genres</option>
-                {genres.map((g) => (
-                  <option key={g.id} value={g.id}>
-                    {g.name}
-                  </option>
-                ))}
-              </select>
-            )}
+            <p className="search-page__count">Showing {results.length} results</p>
           </div>
         </>
       )}
-
-      {/* Discover filters when no query */}
-      {!query && (filter !== 'all' || selectedGenre) ? null : !query && filter === 'all' && !selectedGenre ? null : null}
 
       {error && (
         <div className="error-message">
@@ -294,7 +522,7 @@ export default function SearchPage() {
         </div>
       )}
 
-      {(query || filter !== 'all' || selectedGenre) && (
+      {(query || hasActiveFilters) && (
         <>
           {loading ? (
             <div className="search-grid">
@@ -306,21 +534,21 @@ export default function SearchPage() {
             <div className="search-page__empty">
               <Search size={48} />
               <h3>No results found</h3>
-              <p>Try different keywords or browse popular titles</p>
+              <p>{hasActiveFilters ? 'Try broadening your filters or switching the content type.' : 'Try different keywords or browse popular titles.'}</p>
             </div>
           ) : (
             <>
               <div className="search-grid search-grid--animated">
                 {results.map((item, i) => (
                   <div
-                    key={`${item.media_type || filter}-${item.id}`}
+                    key={`${item.media_type || type}-${item.id}`}
                     className="search-grid__item"
                     style={{ animationDelay: `${Math.min(i, 19) * 40}ms` }}
                   >
                     <ContentCard
                       item={{
                         ...item,
-                        media_type: item.media_type || (filter !== 'all' ? filter : undefined),
+                        media_type: item.media_type || (type !== DEFAULT_TYPE ? type : undefined),
                       }}
                       onOpenModal={setModalItem}
                     />
