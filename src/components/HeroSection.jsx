@@ -62,7 +62,6 @@ export default function HeroSection({ items }) {
   useEffect(() => {
     currentTrailerKeyRef.current = trailerKey;
     clearTimeout(loadTimerRef.current);
-    setLoadedTrailerKey('');
     return () => clearTimeout(loadTimerRef.current);
   }, [trailerKey]);
 
