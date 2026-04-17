@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Search, X } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import { useWatchlist } from '../context/WatchlistContext';
 import { clearRecentSearches, getRecentSearches, saveRecentSearch } from '../recentSearches';
 
@@ -17,6 +18,7 @@ export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { watchlist } = useWatchlist();
+  const { user, isAuthenticated } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 30);
@@ -169,6 +171,11 @@ export default function Navbar() {
           <li>
             <Link to="/watchlist" className={`navbar__link ${isActive('/watchlist') ? 'active' : ''}`}>
               Watchlist{watchlist.length > 0 ? ` (${watchlist.length})` : ''}
+            </Link>
+          </li>
+          <li>
+            <Link to="/account" className={`navbar__link ${isActive('/account') ? 'active' : ''}`}>
+              {isAuthenticated ? user.username : 'Account'}
             </Link>
           </li>
         </ul>

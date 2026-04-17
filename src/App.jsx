@@ -8,6 +8,7 @@ const SearchPage = lazy(() => import('./pages/SearchPage'));
 const MovieDetailPage = lazy(() => import('./pages/MovieDetailPage'));
 const TvDetailPage = lazy(() => import('./pages/TvDetailPage'));
 const WatchPage = lazy(() => import('./pages/WatchPage'));
+const AccountPage = lazy(() => import('./pages/AccountPage'));
 const GenrePage = lazy(() => import('./pages/GenrePage'));
 const WatchlistPage = lazy(() => import('./pages/WatchlistPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
@@ -49,6 +50,7 @@ export default function App() {
               <Route path="/tv/:id" element={<TvDetailPage />} />
               <Route path="/watch/movie/:id" element={<WatchPage />} />
               <Route path="/watch/tv/:id/:season/:episode" element={<WatchPage />} />
+              <Route path="/account" element={<AccountPage />} />
               <Route path="/genre/:id" element={<GenrePage />} />
               <Route path="/watchlist" element={<WatchlistPage />} />
               <Route path="*" element={<NotFoundPage />} />

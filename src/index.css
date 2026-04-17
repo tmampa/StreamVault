@@ -1672,6 +1672,166 @@ input {
   margin-top: 16px;
 }
 
+/* =================== ACCOUNT PAGE =================== */
+
+.account-page {
+  padding-top: calc(var(--nav-height) + 28px);
+  min-height: 100vh;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding-left: var(--container-padding);
+  padding-right: var(--container-padding);
+  padding-bottom: 72px;
+}
+
+.account-page__hero {
+  margin-bottom: 28px;
+}
+
+.account-page__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  margin-bottom: 16px;
+  border-radius: 999px;
+  background: rgba(245, 158, 11, 0.12);
+  color: var(--accent-primary);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.account-page__title {
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  margin-bottom: 10px;
+}
+
+.account-page__subtitle {
+  max-width: 720px;
+  font-size: 1rem;
+  color: var(--text-secondary);
+}
+
+.account-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.account-card {
+  padding: 22px;
+  border: 1px solid var(--bg-glass-border);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(180deg, rgba(34, 34, 34, 0.9), rgba(16, 16, 16, 0.96));
+  box-shadow: var(--shadow-card);
+}
+
+.account-card--accent {
+  background: linear-gradient(160deg, rgba(40, 24, 8, 0.95), rgba(20, 20, 20, 0.96));
+}
+
+.account-card__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.account-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--accent-primary);
+}
+
+.account-card__title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.account-card__copy,
+.account-card__hint,
+.account-page__meta {
+  color: var(--text-secondary);
+}
+
+.account-card__hint {
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.account-page__username {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 14px;
+  margin-bottom: 10px;
+  border-radius: var(--radius-xl);
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.account-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.account-form__label {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.account-input {
+  width: 100%;
+  padding: 13px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.account-input:focus {
+  border-color: rgba(245, 158, 11, 0.8);
+  background: rgba(255, 255, 255, 0.08);
+  outline: none;
+}
+
+.account-input--mono,
+.account-secret__code {
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.account-page__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.account-secret__code {
+  margin-top: 8px;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
 /* =================== SEARCH PAGE =================== */
 
 .search-page {
@@ -2489,6 +2649,22 @@ a.detail__genre-tag:hover {
     min-width: 0;
     font-size: 0.8rem;
     padding: 8px 12px;
+  }
+
+  .account-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .account-card {
+    padding: 18px;
+  }
+
+  .account-page__username {
+    font-size: 1rem;
+  }
+
+  .account-page__actions .btn {
+    width: 100%;
   }
 
   /* Search page */
