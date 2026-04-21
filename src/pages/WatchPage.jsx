@@ -5,7 +5,8 @@ import { ArrowLeft, ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-reac
 import VideoPlayer from '../components/VideoPlayer';
 import { getMovieDetails, getTvDetails, getTvSeasonDetails } from '../api/tmdb';
 import { useContinueWatching } from '../context/ContinueWatchingContext';
-import { createProgressSnapshot, getContinueWatchingKey } from '../context/continueWatching';
+import { createProgressSnapshot, findContinueWatchingItem } from '../context/continueWatching';
+import { getPlayerRouteSyncTarget } from './watchPlayback';
 
 const AUTO_NEXT_STORAGE_KEY = 'tm_auto_next_enabled';
 const AUTO_NEXT_DELAY_SECONDS = 6;
@@ -127,14 +128,9 @@ export default function WatchPage() {
         };
   }, [details, episode, isMovie, season, tmdbId]);
 
-  const historyLookupKey = useMemo(
-    () => getContinueWatchingKey({ id: parseInt(tmdbId, 10), media_type: isMovie ? 'movie' : 'tv' }),
-    [isMovie, tmdbId],
-  );
-
   const currentHistoryItem = useMemo(
-    () => items.find((item) => getContinueWatchingKey(item) === historyLookupKey) || null,
-    [historyLookupKey, items],
+    () => findContinueWatchingItem(items, historyEntry),
+    [historyEntry, items],
   );
 
   const resumeStartTime = useMemo(() => {
@@ -170,6 +166,9 @@ export default function WatchPage() {
     routePlaybackKey,
     startTime: resumeStartTime,
   }));
+  const activeStartTime = playerResumeState.routePlaybackKey === routePlaybackKey
+    ? playerResumeState.startTime
+    : resumeStartTime;
 
   const nextEpisodeTarget = useMemo(() => {
     if (isMovie || !details) {
@@ -230,9 +229,9 @@ export default function WatchPage() {
   }, [resumeStartTime, routePlaybackKey]);
 
   useEffect(() => {
-    lastSavedCheckpointRef.current = Math.floor(resumeStartTime / PROGRESS_CHECKPOINT_SECONDS);
-    lastSavedProgressRef.current = resumeStartTime;
-  }, [resumeStartTime, tmdbId, season, episode]);
+    lastSavedCheckpointRef.current = Math.floor(activeStartTime / PROGRESS_CHECKPOINT_SECONDS);
+    lastSavedProgressRef.current = activeStartTime;
+  }, [activeStartTime, tmdbId, season, episode]);
 
   const navigateToEpisode = useCallback(
     (target, options = {}) => {
@@ -281,10 +280,24 @@ export default function WatchPage() {
         return;
       }
 
-      if (!isMovie) {
-        if (Number(playerEvent.season) !== season || Number(playerEvent.episode) !== episode) {
-          return;
-        }
+      const routeSyncTarget = getPlayerRouteSyncTarget({
+        isMovie,
+        currentSeason: season,
+        currentEpisode: episode,
+        playerEvent,
+      });
+
+      if (routeSyncTarget) {
+        const syncedRoutePlaybackKey = `tv-${tmdbId}-${routeSyncTarget.season}-${routeSyncTarget.episode}`;
+        const progressSnapshot = createProgressSnapshot(playerEvent);
+
+        setCountdownRemaining(null);
+        setPlayerResumeState({
+          routePlaybackKey: syncedRoutePlaybackKey,
+          startTime: progressSnapshot.progressSeconds,
+        });
+        navigateToEpisode(routeSyncTarget, { replace: true });
+        return;
       }
 
       if (!historyEntry) {
@@ -352,7 +365,7 @@ export default function WatchPage() {
         persistProgress(false);
       }
     },
-    [addToHistory, autoNextEnabled, episode, historyEntry, isMovie, nextEpisodeTarget, nextHistoryEntry, removeFromHistory, season, tmdbId, updateProgress]
+    [addToHistory, autoNextEnabled, episode, historyEntry, isMovie, navigateToEpisode, nextEpisodeTarget, nextHistoryEntry, removeFromHistory, season, tmdbId, updateProgress]
   );
 
   useEffect(() => {
@@ -426,7 +439,7 @@ export default function WatchPage() {
         mediaType={isMovie ? 'movie' : 'tv'}
         season={season}
         episode={episode}
-        startTime={playerResumeState.startTime}
+        startTime={activeStartTime}
         onPlayerEvent={handlePlayerEvent}
       >
         {!isMovie && countdownRemaining != null && nextEpisodeTarget && (
